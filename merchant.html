@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html data-i18n-page="merchant.page.title" lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1a56db">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Термінал мерчанта · CertSwap</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="header-brand">
+      <div class="header-brand-logo">CS</div>
+      <span class="header-brand-name">CertSwap</span>
+    </a>
+    <div class="header-right">
+      <span class="header-page-title"><span data-i18n="merchant.page.title">Термінал мерчанта</span></span>
+      <a href="about.html" class="back-link" style="opacity:.6;font-size:12px"><span data-i18n="nav.about">Про CertSwap</span></a>
+      <a href="index.html" class="back-link"><span data-i18n="common.back">← На головну</span></a>
+    </div>
+  </div>
+</header>
+
+<section class="subhero">
+  <div class="container">
+    <div class="subhero-label"><span data-i18n="merchant.subhero.label">Мерчант · Оплата</span></div>
+    <h1 class="subhero-title"><span data-i18n="merchant.subhero.title">Термінал мерчанта</span></h1>
+    <p class="subhero-desc"><span data-i18n="merchant.subhero.desc">Перевір та підтверди платіжний токен покупця.</span></p>
+  </div>
+</section>
+
+<main class="container">
+
+  <!-- Merchant login gate -->
+  <section class="card highlight" id="merchantLoginCard" style="display:none">
+    <h2 data-i18n="merchant.login.title">Вхід мерчанта</h2>
+    <p class="card-desc" data-i18n="merchant.login.desc">Введіть email, яким ви зареєстровані як мерчант у CertSwap.</p>
+    <div class="form-group">
+      <label for="merchantLoginEmail" data-i18n="merchant.login.email.label">Email</label>
+      <input type="email" id="merchantLoginEmail" class="input" placeholder="merchant@example.com" autocomplete="email">
+    </div>
+    <button class="btn btn-lg" id="merchantLoginBtn" onclick="merchantLogin()" style="width:100%"><span data-i18n="merchant.login.btn">Увійти</span></button>
+    <button class="btn btn-lg btn-outline mt-4" id="merchantMetaMaskBtn" onclick="merchantConnectMetaMask()" style="width:100%"><span data-i18n="merchant.login.metamask">🦊 Увійти через MetaMask</span></button>
+    <div id="merchantLoginResult" style="display:none;margin-top:12px"></div>
+  </section>
+
+  <!-- Not authorized as merchant -->
+  <section class="card" id="merchantNotAuthCard" style="display:none">
+    <div class="result-invalid" style="display:block">
+      <span data-i18n="merchant.notauth.msg">Ви не зареєстровані як мерчант. Зверніться до адміністратора.</span>
+    </div>
+    <button class="btn btn-outline mt-4" onclick="merchantLogout()"><span data-i18n="merchant.notauth.switch">Увійти іншим email</span></button>
+  </section>
+
+  <div id="merchantTerminalArea" style="display:none">
+
+  <!-- Step 1 -->
+  <section class="card highlight">
+    <h2 data-i18n="merchant.step1.title">Крок 1 — Перевірка токена</h2>
+    <div class="form-group">
+      <label for="tokenHash" data-i18n="merchant.token.label">Token hash</label>
+      <button onclick="pasteFromClipboard()"
+              style="display:block;width:100%;margin-bottom:8px;padding:8px;background:#f0f4ff;border:1px solid var(--cs-blue);border-radius:8px;cursor:pointer;color:var(--cs-blue);font-size:14px">
+        <span data-i18n="merchant.btn.paste">📋 Вставити з буфера обміну</span>
+      </button>
+      <input type="text" id="tokenHash" class="input-code" placeholder="PAY-XXXX або 0x…" autocomplete="off" data-i18n-placeholder="merchant.token.label">
+      <p class="hint" data-i18n="merchant.token.hint">Введи token_hash або вставте зі сканера QR.</p>
+    </div>
+    <button class="btn btn-lg" id="checkBtn" onclick="doCheck()" style="width:100%"><span data-i18n="merchant.btn.check">Перевірити токен</span></button>
+    <div id="checkResult"></div>
+  </section>
+
+  <!-- Step 2 (shown after check) -->
+  <section class="card" id="confirmCard" style="display:none">
+    <h2 data-i18n="merchant.step2.title">Крок 2 — Підтвердження оплати</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px" id="tokenGrid"></div>
+    <div class="result-info mt-4" style="display:block">
+      <span data-i18n="merchant.warn">⚠️ Перевір дані. Після підтвердження операція незворотня.</span>
+    </div>
+    <div class="btn-row mt-6">
+      <button class="btn btn-lg btn-success flex-1" id="confirmBtn" onclick="doConfirm()"><span data-i18n="merchant.btn.confirm">✅ Підтвердити оплату</span></button>
+      <button class="btn btn-outline" onclick="resetTerminal()"><span data-i18n="merchant.btn.cancel">Скасувати</span></button>
+    </div>
+    <div id="confirmResult"></div>
+  </section>
+
+  <!-- Step 3 (receipt) -->
+  <section class="card" id="receiptCard" style="display:none">
+    <div class="success-center" style="text-align:center;padding:20px 0">
+      <div style="font-size:48px;margin-bottom:12px">✅</div>
+      <h2 style="margin-bottom:8px" data-i18n="merchant.receipt.title">Оплату підтверджено</h2>
+      <p class="text-muted" id="receiptSummary"></p>
+      <div id="receiptTx" style="margin-top:12px"></div>
+      <button class="btn" style="margin-top:24px" onclick="resetTerminal()"><span data-i18n="merchant.btn.new">Нова операція</span></button>
+    </div>
+  </section>
+
+  <!-- Step 3 (stats) -->
+  <section class="card mt-4" id="merchantStatsCard">
+    <h2 data-i18n="merchant.stats.title">Моя статистика</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px" id="merchantStatsSummary"></div>
+    <div id="merchantStatsContent"></div>
+    <button class="btn btn-outline mt-4" onclick="loadMerchantStats()"><span data-i18n="merchant.stats.refresh">🔄 Оновити</span></button>
+  </section>
+
+  <section class="card tech-info">
+    <h3 data-i18n="merchant.how.title">Інструкція для касира</h3>
+    <ol class="info-list">
+      <li data-i18n="merchant.how.li1">Покупець пред'являє QR-код або повідомляє token_hash.</li>
+      <li data-i18n="merchant.how.li2">Введи token_hash і натисни «Перевірити».</li>
+      <li data-i18n="merchant.how.li3">Перевір бренд, суму та статус.</li>
+      <li data-i18n="merchant.how.li4">Натисни «Підтвердити оплату».</li>
+    </ol>
+    <div class="tech-note" data-i18n="merchant.how.note">Кожен токен одноразовий. Повторне підтвердження буде відхилено.</div>
+  </section>
+
+  </div>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p data-i18n="footer.demo">CertSwap Demo · Testnet Polygon Amoy</p>
+    <p class="tech-note"><a href="/terms.html" data-i18n="footer.terms">Terms of Use</a> · <a href="/privacy.html" data-i18n="footer.privacy">Privacy Policy</a> · <a href="/contacts.html" data-i18n="footer.contacts">Contacts</a></p>
+  </div>
+</footer>
+
+<script src="/js/i18n.js"></script>
+<script src="/config/features.js"></script>
+<script src="/js/vendor/ethers.min.js"></script>
+
+<script src="js/web3.js"></script>
+<script src="js/api.js"></script>
+<script src="js/provider.js"></script>
+<script>
+let currentToken = '';
+
+function esc(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function merchantIdentity() {
+  if (localStorage.getItem('certswap_metamask_connected') && window.Web3API && typeof window.Web3API.getUserAddress === 'function') {
+    const addr = window.Web3API.getUserAddress();
+    if (addr) return addr;
+  }
+  return localStorage.getItem('certswap_user_email') || '';
+}
+
+function merchantFetch(path, opts) {
+  const base = (window.CertSwapConfig && window.CertSwapConfig.BACKEND_URL) || '';
+  return fetch(base + path, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', 'X-User-Id': merchantIdentity(), ...(opts && opts.headers) },
+  }).then(r => r.json());
+}
+
+async function merchantLogin() {
+  const emailInput = document.getElementById('merchantLoginEmail');
+  const email = emailInput.value.trim();
+  const result = document.getElementById('merchantLoginResult');
+  if (!email) { alert('Введи email'); return; }
+  const btn = document.getElementById('merchantLoginBtn');
+  btn.disabled = true;
+  try {
+    const data = await fetch('/api/auth/email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    }).then(r => r.json());
+    if (data && data.success) {
+      localStorage.setItem('certswap_user_email', email);
+      result.style.display = 'none';
+      await checkMerchantAuth();
+    } else {
+      result.style.display = 'block';
+      result.innerHTML = `<div class="result-invalid" style="display:block">${esc(data && data.message || 'Помилка входу')}</div>`;
+    }
+  } catch (err) {
+    result.style.display = 'block';
+    result.innerHTML = `<div class="result-invalid" style="display:block">${esc(err.message)}</div>`;
+  }
+  btn.disabled = false;
+}
+
+function merchantLogout() {
+  localStorage.removeItem('certswap_user_email');
+  checkMerchantAuth();
+}
+
+async function merchantConnectMetaMask() {
+  const result = document.getElementById('merchantLoginResult');
+  const btn = document.getElementById('merchantMetaMaskBtn');
+  btn.disabled = true;
+  try {
+    if (!window.Web3API || typeof window.Web3API.initWeb3 !== 'function') {
+      throw new Error('MetaMask недоступний на цій сторінці');
+    }
+    await window.Web3API.initWeb3();
+    localStorage.setItem('certswap_metamask_connected', '1');
+    result.style.display = 'none';
+    await checkMerchantAuth();
+  } catch (err) {
+    result.style.display = 'block';
+    result.innerHTML = `<div class="result-invalid" style="display:block">${esc(err.message)}</div>`;
+  }
+  btn.disabled = false;
+}
+
+async function checkMerchantAuth() {
+  const loginCard = document.getElementById('merchantLoginCard');
+  const notAuthCard = document.getElementById('merchantNotAuthCard');
+  const terminalArea = document.getElementById('merchantTerminalArea');
+  hideEl(loginCard); hideEl(notAuthCard); hideEl(terminalArea);
+
+  const viaMetaMask = !!localStorage.getItem('certswap_metamask_connected');
+  if (viaMetaMask && window.Web3API && !window.Web3API.isConnected()) {
+    try { await window.Web3API.initWeb3(); } catch { /* fall through to email check below */ }
+  }
+
+  const identified = viaMetaMask ? !!merchantIdentity() : !!localStorage.getItem('certswap_user_email');
+  if (!identified) {
+    showEl(loginCard);
+    return;
+  }
+
+  try {
+    const data = await merchantFetch('/api/merchant/me');
+    if (data && data.success && data.authorized) {
+      showEl(terminalArea);
+      loadMerchantStats();
+    } else {
+      showEl(notAuthCard);
+    }
+  } catch (err) {
+    showEl(notAuthCard);
+  }
+}
+
+async function loadMerchantStats() {
+  const summary = document.getElementById('merchantStatsSummary');
+  const content = document.getElementById('merchantStatsContent');
+  if (!summary || !content) return;
+  content.innerHTML = '';
+  showLoading(content, 'Завантаження статистики…');
+
+  try {
+    const data = await merchantFetch('/api/merchant/stats');
+    if (!data || !data.success) {
+      clearEl(content);
+      content.innerHTML = `<div class="result-invalid" style="display:block">${esc(data && data.message || 'Помилка завантаження статистики')}</div>`;
+      summary.innerHTML = '';
+      return;
+    }
+
+    const byBrandStr = Object.keys(data.byBrand || {}).length
+      ? Object.entries(data.byBrand).map(([b, sum]) => `${esc(b)}: ${sum} грн`).join(' · ')
+      : '—';
+
+    summary.innerHTML =
+      mkCell('Підтверджені оплати', data.count != null ? data.count : 0) +
+      mkCell('Загальна сума', (data.total != null ? data.total : 0) + ' грн');
+
+    clearEl(content);
+
+    if (!data.payments || data.payments.length === 0) {
+      content.innerHTML = `<p class="hint" data-i18n="merchant.stats.empty">Поки немає підтверджених оплат.</p>`;
+      return;
+    }
+
+    const cellStyle = 'padding:8px 12px;border:1px solid var(--cs-border)';
+    const rows = data.payments.map(p => `
+      <tr>
+        <td style="${cellStyle}">${esc(fmtDate(p.date) || p.date || '—')}</td>
+        <td style="${cellStyle}">${esc(p.brand || '—')}</td>
+        <td style="${cellStyle}">${p.amount != null ? p.amount : '—'} грн</td>
+        <td style="${cellStyle}">${p.tx_url ? `<a class="tx-link" href="${esc(p.tx_url)}" target="_blank" rel="noopener">${esc((p.tx_hash || '').slice(0, 10))}…</a>` : (p.tx_hash ? esc(p.tx_hash.slice(0, 10)) + '…' : '—')}</td>
+      </tr>`).join('');
+
+    content.innerHTML = `
+      <table style="width:100%;border-collapse:collapse;font-size:var(--text-sm);margin-top:8px">
+        <thead>
+          <tr style="background:var(--cs-bg);text-align:left">
+            <th style="${cellStyle}" data-i18n="merchant.stats.col.date">Дата</th>
+            <th style="${cellStyle}" data-i18n="merchant.stats.col.brand">Бренд</th>
+            <th style="${cellStyle}" data-i18n="merchant.stats.col.amount">Сума</th>
+            <th style="${cellStyle}" data-i18n="merchant.stats.col.tx">Хеш транзакції</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <p class="hint" style="margin-top:8px">По брендах: ${byBrandStr}</p>`;
+  } catch (err) {
+    clearEl(content);
+    content.innerHTML = `<div class="result-invalid" style="display:block">${esc(err.message)}</div>`;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', checkMerchantAuth);
+
+// Pre-fill from URL (?hash= from pay.html, or legacy ?token= / ?token_hash=)
+const _tokenParam = getUrlParam('hash') || getUrlParam('token') || getUrlParam('token_hash');
+if (_tokenParam) {
+  document.getElementById('tokenHash').value = _tokenParam;
+  setTimeout(doCheck, 300);
+}
+
+async function pasteFromClipboard() {
+  try {
+    const text = await navigator.clipboard.readText();
+    const input = document.getElementById('tokenHash');
+    if (text.includes('token=')) {
+      try { const u = new URL(text); input.value = u.searchParams.get('token') || text; }
+      catch { input.value = text; }
+    } else { input.value = text; }
+  } catch { alert('Дозвольте доступ до буфера обміну'); }
+}
+
+async function doCheck() {
+  let hash = document.getElementById('tokenHash').value.trim();
+  if (hash.startsWith('http') || hash.includes('=')) {
+    try {
+      const u = new URL(hash.startsWith('http') ? hash : (window.location.origin + '/' + hash));
+      hash = u.searchParams.get('hash') || u.searchParams.get('token') || u.searchParams.get('token_hash') || hash;
+    } catch {}
+  }
+  if (!hash) { alert('Введи token_hash'); return; }
+
+  const btn = document.getElementById('checkBtn');
+  const res = document.getElementById('checkResult');
+  btn.disabled = true; btn.textContent = 'Перевірка…';
+  clearEl(res);
+  hideEl(document.getElementById('confirmCard'));
+  hideEl(document.getElementById('receiptCard'));
+  showLoading(res, 'Перевірка у блокчейні…');
+
+  const data = await Provider.checkPaymentToken(hash);
+
+  btn.disabled = false; btn.textContent = 'Перевірити токен';
+
+  if (!data.success) {
+    showResult(res, { success: false, message: data.message || 'Токен не знайдено або недійсний' });
+    return;
+  }
+
+  clearEl(res);
+  currentToken = hash;
+
+  const statusMap = { valid: '✅ Дійсний', expired: '⌛ Прострочений', used: '🔒 Використаний' };
+  const status = data.isValid === false ? 'expired' : (data.status || 'valid');
+
+  const grid = document.getElementById('tokenGrid');
+  grid.innerHTML =
+    mkCell('Бренд',      data.brand  || '—') +
+    mkCell('Сума',       (data.amount != null ? data.amount : '—') + ' грн') +
+    mkCell('Статус',     statusMap[status] || status) +
+    mkCell('Дійсний до', fmtDate(data.expiresAt || data.expires_at) || '—');
+
+  const confirmBtn = document.getElementById('confirmBtn');
+  if (status !== 'valid') {
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = '⛔ Токен недійсний';
+    confirmBtn.className = 'btn btn-lg btn-muted flex-1';
+  } else {
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = '✅ Підтвердити оплату';
+    confirmBtn.className = 'btn btn-lg btn-success flex-1';
+  }
+  showEl(document.getElementById('confirmCard'));
+}
+
+function mkCell(label, value) {
+  return `<div>
+    <div style="font-size:var(--text-xs);color:var(--cs-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">${label}</div>
+    <div style="font-size:var(--text-lg);font-weight:700;color:var(--cs-ink)">${value}</div>
+  </div>`;
+}
+
+async function doConfirm() {
+  if (!currentToken) return;
+  const btn = document.getElementById('confirmBtn');
+  const res = document.getElementById('confirmResult');
+  btn.disabled = true; btn.textContent = 'Проведення…';
+  clearEl(res);
+  showLoading(res, 'Запис у блокчейн…');
+
+  const data = await Provider.confirmPayment(currentToken);
+
+  if (data.success) {
+    hideEl(document.getElementById('confirmCard'));
+    clearEl(res);
+    document.getElementById('receiptSummary').textContent =
+      (data.brand ? data.brand + ' · ' : '') +
+      (data.amount != null ? data.amount + ' грн' : '') +
+      (data.message ? ' · ' + data.message : '');
+    const txDiv = document.getElementById('receiptTx');
+    txDiv.innerHTML = data.tx_url ? `<a class="tx-link" href="${data.tx_url}" target="_blank" rel="noopener">Переглянути у блокчейні →</a>` : '';
+    showEl(document.getElementById('receiptCard'));
+  } else {
+    showResult(res, { success: false, message: data.message || 'Помилка підтвердження' });
+    btn.disabled = false; btn.textContent = '✅ Підтвердити оплату';
+  }
+}
+
+function resetTerminal() {
+  currentToken = '';
+  document.getElementById('tokenHash').value = '';
+  clearEl(document.getElementById('checkResult'));
+  clearEl(document.getElementById('confirmResult'));
+  hideEl(document.getElementById('confirmCard'));
+  hideEl(document.getElementById('receiptCard'));
+}
+</script>
+<script src="/js/pwa.js"></script>
+</body>
+</html>

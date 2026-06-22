@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html data-i18n-page="how.page.title" lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1a56db">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Як це працює · CertSwap</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Larger emoji inside step-icon circles */
+    .step-icon { font-size: 18px; }
+
+    /* Step title + description */
+    .step strong {
+      display: block;
+      font-size: var(--text-sm);
+      font-weight: 700;
+      color: var(--cs-ink);
+      margin-bottom: 4px;
+      line-height: 1.3;
+    }
+    .step p { margin: 0; }
+
+    /* Note banner */
+    .mode-note {
+      border-left: 4px solid #1a56db;
+      background: rgba(26,86,219,.07);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 11px 15px;
+      font-size: var(--text-sm);
+      color: var(--cs-ink);
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+    .mode-note-green  { border-left-color: #059669; background: rgba(5,150,105,.07); }
+    .mode-note-purple { border-left-color: #7c3aed; background: rgba(124,58,237,.07); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="header-brand">
+      <div class="header-brand-logo">CS</div>
+      <span class="header-brand-name">CertSwap</span>
+    </a>
+    <div class="header-right">
+      <span class="header-page-title" data-i18n="how.page.title">Як це працює</span>
+      <a href="about.html" class="back-link" style="opacity:.6;font-size:12px" data-i18n="nav.about">Про CertSwap</a>
+      <a href="index.html" class="back-link" data-i18n="common.back">← На головну</a>
+    </div>
+  </div>
+</header>
+
+<section class="subhero">
+  <div class="container">
+    <div class="subhero-label" id="hero-label">…</div>
+    <h1 class="subhero-title" id="hero-title">…</h1>
+    <p class="subhero-desc" id="hero-desc"></p>
+  </div>
+</section>
+
+<main class="container">
+
+  <div id="page-loading" style="text-align:center;padding:48px 20px;color:var(--cs-muted)">
+    <p data-i18n="common.loading">Завантаження…</p>
+  </div>
+
+  <!-- ── M1: Web3 / MetaMask ──────────────────────────────────── -->
+  <div id="how-m1" style="display:none">
+
+    <section class="card highlight">
+      <div class="mode-note" data-i18n="how.n.hero.m1.desc">
+        Чотири кроки — і ваші сертифікати під повним контролем.
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-icon">🦊</div>
+          <strong data-i18n="how.n.m1.s1.t">Встановіть MetaMask</strong>
+          <p data-i18n="how.n.m1.s1.d">Безкоштовне розширення для Chrome або Firefox. Збережіть seed-фразу в надійному місці.</p>
+        </div>
+        <div class="step">
+          <div class="step-icon">🔓</div>
+          <strong data-i18n="how.n.m1.s2.t">Активуйте сертифікат</strong>
+          <p data-i18n="how.n.m1.s2.d">Введіть код або відскануйте QR. MetaMask підпише — ваш особистий підпис у блокчейні.</p>
+        </div>
+        <div class="step">
+          <div class="step-icon">💰</div>
+          <strong data-i18n="how.n.m1.s3.t">Перегляньте та обміняйте</strong>
+          <p data-i18n="how.n.m1.s3.d">У «Гаманці» — всі бонуси. Обмінюйте між брендами, кожна дія підписується у MetaMask.</p>
+        </div>
+        <div class="step">
+          <div class="step-icon">💳</div>
+          <strong data-i18n="how.n.m1.s4.t">Оплатіть на касі</strong>
+          <p data-i18n="how.n.m1.s4.d">Натисніть «Оплатити», підпишіть у MetaMask, покажіть QR касиру.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 data-i18n="how.n.try.title">Спробуйте самі</h2>
+      <div class="nav-tiles">
+        <a href="activate.html" class="nav-tile"><span class="nav-tile-icon">🔓</span><span data-i18n="tile.activate">Активація</span></a>
+        <a href="wallet.html"   class="nav-tile"><span class="nav-tile-icon">👛</span><span data-i18n="tile.wallet">Гаманець</span></a>
+        <a href="exchange.html" class="nav-tile"><span class="nav-tile-icon">📊</span><span data-i18n="tile.exchange">Біржа</span></a>
+        <a href="pay.html"      class="nav-tile"><span class="nav-tile-icon">💳</span><span data-i18n="tile.pay">Оплата</span></a>
+      </div>
+    </section>
+
+  </div><!-- /how-m1 -->
+
+  <!-- ── M2: Програма лояльності ─────────────────────────────── -->
+  <div id="how-m2" style="display:none">
+
+    <section class="card highlight">
+      <div class="mode-note mode-note-green" data-i18n="how.n.hero.m2.desc">
+        Нічого встановлювати — просто відкрийте сайт.
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-icon">🌐</div>
+          <strong data-i18n="how.n.m2.s1.t">Відкрийте CertSwap</strong>
+          <p data-i18n="how.n.m2.s1.d">Нічого встановлювати. Сайт автоматично запам'ятає вас на цьому пристрої.</p>
+        </div>
+        <div class="step">
+          <div class="step-icon">🔓</div>
+          <strong data-i18n="how.n.m2.s2.t">Активуйте сертифікат</strong>
+          <p data-i18n="how.n.m2.s2.d">Введіть код або відскануйте QR з упаковки. Бонуси зараховуються одразу.</p>
+        </div>
+        <div class="step">
+          <div class="step-icon">📧</div>
+          <strong data-i18n="how.n.m2.s3.t">Прив'яжіть email</strong>
+          <p data-i18n="how.n.m2.s3.d">У «Профілі» вкажіть email — баланс буде доступний з будь-якого пристрою.</p>
+        </div>
+        <div class="step">
+          <div class="step-icon">💳</div>
+          <strong data-i18n="how.n.m2.s4.t">Оплатіть на касі</strong>
+          <p data-i18n="how.n.m2.s4.d">Натисніть «Оплатити», покажіть QR-код з екрана касиру. Бонуси списуються.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 data-i18n="how.n.try.title">Спробуйте самі</h2>
+      <div class="nav-tiles">
+        <a href="activate.html" class="nav-tile"><span class="nav-tile-icon">🔓</span><span data-i18n="tile.activate">Активація</span></a>
+        <a href="wallet.html"   class="nav-tile"><span class="nav-tile-icon">👛</span><span data-i18n="tile.wallet">Гаманець</span></a>
+        <a href="exchange.html" class="nav-tile"><span class="nav-tile-icon">📊</span><span data-i18n="tile.exchange">Біржа</span></a>
+        <a href="pay.html"      class="nav-tile"><span class="nav-tile-icon">💳</span><span data-i18n="tile.pay">Оплата</span></a>
+      </div>
+    </section>
+
+  </div><!-- /how-m2 -->
+
+  <!-- ── Bridge: два режими з табами ─────────────────────────── -->
+  <div id="how-brg" style="display:none">
+
+    <section class="card highlight">
+      <div class="mode-note mode-note-purple" data-i18n="how.n.brg.note">
+        Вибір відбувається при першій транзакції — і зберігається для пристрою. Всі операції відповідають стандарту eIDAS.
+      </div>
+
+      <div class="tab-bar" style="margin-bottom:20px">
+        <button class="tab-btn active" id="tabM1" onclick="switchTab('m1')">
+          <span data-i18n="how.n.tab.m1">🦊 З MetaMask</span>
+        </button>
+        <button class="tab-btn" id="tabM2" onclick="switchTab('m2')">
+          <span data-i18n="how.n.tab.m2">📧 Без MetaMask</span>
+        </button>
+      </div>
+
+      <!-- Web3 steps -->
+      <div id="brgPanelM1">
+        <div class="steps">
+          <div class="step">
+            <div class="step-icon">🦊</div>
+            <strong data-i18n="how.n.m1.s1.t">Встановіть MetaMask</strong>
+            <p data-i18n="how.n.m1.s1.d">Безкоштовне розширення для Chrome або Firefox. Збережіть seed-фразу в надійному місці.</p>
+          </div>
+          <div class="step">
+            <div class="step-icon">🔓</div>
+            <strong data-i18n="how.n.m1.s2.t">Активуйте сертифікат</strong>
+            <p data-i18n="how.n.m1.s2.d">Введіть код або відскануйте QR. MetaMask підпише — ваш особистий підпис у блокчейні.</p>
+          </div>
+          <div class="step">
+            <div class="step-icon">💰</div>
+            <strong data-i18n="how.n.m1.s3.t">Перегляньте та обміняйте</strong>
+            <p data-i18n="how.n.m1.s3.d">У «Гаманці» — всі бонуси. Обмінюйте між брендами, кожна дія підписується у MetaMask.</p>
+          </div>
+          <div class="step">
+            <div class="step-icon">💳</div>
+            <strong data-i18n="how.n.m1.s4.t">Оплатіть на касі</strong>
+            <p data-i18n="how.n.m1.s4.d">Натисніть «Оплатити», підпишіть у MetaMask, покажіть QR касиру.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email/Backend steps -->
+      <div id="brgPanelM2" style="display:none">
+        <div class="steps">
+          <div class="step">
+            <div class="step-icon">🌐</div>
+            <strong data-i18n="how.n.m2.s1.t">Відкрийте CertSwap</strong>
+            <p data-i18n="how.n.m2.s1.d">Нічого встановлювати. Сайт автоматично запам'ятає вас на цьому пристрої.</p>
+          </div>
+          <div class="step">
+            <div class="step-icon">🔓</div>
+            <strong data-i18n="how.n.m2.s2.t">Активуйте сертифікат</strong>
+            <p data-i18n="how.n.m2.s2.d">Введіть код або відскануйте QR з упаковки. Бонуси зараховуються одразу.</p>
+          </div>
+          <div class="step">
+            <div class="step-icon">📧</div>
+            <strong data-i18n="how.n.m2.s3.t">Прив'яжіть email</strong>
+            <p data-i18n="how.n.m2.s3.d">У «Профілі» вкажіть email — баланс буде доступний з будь-якого пристрою.</p>
+          </div>
+          <div class="step">
+            <div class="step-icon">💳</div>
+            <strong data-i18n="how.n.m2.s4.t">Оплатіть на касі</strong>
+            <p data-i18n="how.n.m2.s4.d">Натисніть «Оплатити», покажіть QR-код з екрана касиру. Бонуси списуються.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 data-i18n="how.n.try.title">Спробуйте самі</h2>
+      <div class="nav-tiles">
+        <a href="activate.html" class="nav-tile"><span class="nav-tile-icon">🔓</span><span data-i18n="tile.activate">Активація</span></a>
+        <a href="wallet.html"   class="nav-tile"><span class="nav-tile-icon">👛</span><span data-i18n="tile.wallet">Гаманець</span></a>
+        <a href="exchange.html" class="nav-tile"><span class="nav-tile-icon">📊</span><span data-i18n="tile.exchange">Біржа</span></a>
+        <a href="pay.html"      class="nav-tile"><span class="nav-tile-icon">💳</span><span data-i18n="tile.pay">Оплата</span></a>
+      </div>
+    </section>
+
+  </div><!-- /how-brg -->
+
+</main>
+
+<footer>
+  <div class="container">
+    <p data-i18n="index.footer.offer">CertSwap Demo v2.0 · Не є публічною офертою</p>
+    <p class="tech-note"><a href="/terms.html" data-i18n="footer.terms">Terms of Use</a> · <a href="/privacy.html" data-i18n="footer.privacy">Privacy Policy</a> · <a href="/contacts.html" data-i18n="footer.contacts">Contacts</a></p>
+  </div>
+</footer>
+
+<script src="/js/i18n.js"></script>
+<script src="/config/features.js"></script>
+<script src="/js/pwa.js"></script>
+<script>
+function switchTab(tab) {
+  document.getElementById('brgPanelM1').style.display = tab === 'm1' ? '' : 'none';
+  document.getElementById('brgPanelM2').style.display = tab === 'm2' ? '' : 'none';
+  document.getElementById('tabM1').classList.toggle('active', tab === 'm1');
+  document.getElementById('tabM2').classList.toggle('active', tab === 'm2');
+}
+
+(function () {
+  var heroMeta = {
+    m1:  { label: 'how.n.hero.m1.label', title: 'how.n.hero.m1.title', desc: 'how.n.hero.m1.desc' },
+    m2:  { label: 'how.n.hero.m2.label', title: 'how.n.hero.m2.title', desc: 'how.n.hero.m2.desc' },
+    brg: { label: 'how.n.hero.brg.label', title: 'how.n.hero.brg.title', desc: 'how.n.hero.brg.desc' }
+  };
+
+  function applyModule(mode) {
+    document.getElementById('page-loading').style.display = 'none';
+    document.getElementById('how-' + mode).style.display = '';
+
+    var k = heroMeta[mode];
+    document.getElementById('hero-label').setAttribute('data-i18n', k.label);
+    document.getElementById('hero-title').setAttribute('data-i18n', k.title);
+    document.getElementById('hero-desc').setAttribute('data-i18n', k.desc);
+
+    if (typeof setLanguage === 'function') {
+      setLanguage(window._lang || localStorage.getItem('certswap_lang') || 'ua');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    fetch((window.CertSwapConfig && window.CertSwapConfig.BACKEND_URL || '') + '/api/config')
+      .then(function (r) { return r.json(); })
+      .then(function (cfg) {
+        var w  = !!cfg.MODULE_WEB3_ENABLED;
+        var b  = !!cfg.MODULE_BACKEND_ENABLED;
+        var br = !!cfg.MODULE_BRIDGE_ENABLED;
+        var mode = br ? 'brg' : (w && !b) ? 'm1' : (b && !w) ? 'm2' : 'brg';
+        applyModule(mode);
+      })
+      .catch(function () {
+        document.getElementById('page-loading').innerHTML =
+          '<p style="color:var(--cs-muted)">Не вдалося завантажити налаштування. Спробуйте оновити сторінку.</p>';
+      });
+  });
+})();
+</script>
+</body>
+</html>

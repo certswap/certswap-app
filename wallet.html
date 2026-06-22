@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html data-i18n-page="wallet.page.title" lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1a56db">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Гаманець · CertSwap</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="header-brand">
+      <div class="header-brand-logo">CS</div>
+      <span class="header-brand-name">CertSwap</span>
+    </a>
+    <div class="header-right">
+      <span class="header-page-title"><span data-i18n="wallet.page.title">Гаманець</span></span>
+      <a href="about.html" class="back-link" style="opacity:.6;font-size:12px"><span data-i18n="nav.about">Про CertSwap</span></a>
+      <a href="index.html" class="back-link"><span data-i18n="common.back">← На головну</span></a>
+    </div>
+  </div>
+</header>
+
+<section class="subhero">
+  <div class="container">
+    <div class="subhero-label"><span data-i18n="wallet.subhero.label">Гаманець · Баланс</span></div>
+    <h1 class="subhero-title"><span data-i18n="wallet.subhero.title">Мій гаманець</span></h1>
+    <p class="subhero-desc" id="walletDesc"><span data-i18n="wallet.subhero.desc">Усі бренди та залишки.</span></p>
+    <div class="balance-hero" id="balanceHero" style="display:none">
+      <div class="balance-hero-item">
+        <div class="balance-hero-value" id="totalBalance">—</div>
+        <div class="balance-hero-label"><span data-i18n="wallet.hero.total">Загальний баланс, грн</span></div>
+      </div>
+      <div class="balance-hero-item">
+        <div class="balance-hero-value" id="totalBrands">—</div>
+        <div class="balance-hero-label"><span data-i18n="wallet.hero.brands">Брендів</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main class="container">
+
+  <section class="card">
+    <h2 data-i18n="wallet.balance.title">Баланси по брендах</h2>
+    <div class="btn-row mt-3" style="margin-bottom:16px">
+      <a href="activate.html" class="btn btn-small"><span data-i18n="wallet.btn.activate">+ Активувати код</span></a>
+      <a href="exchange.html" class="btn btn-small btn-outline"><span data-i18n="wallet.btn.exchange">🔄 Обміняти</span></a>
+      <a href="gift.html"     class="btn btn-small btn-outline" data-i18n="wallet.btn.gift">🎁 Подарувати</a>
+    </div>
+    <div id="balanceList"><p class="loading" style="display:flex" data-i18n="wallet.loading">Завантаження балансів…</p></div>
+  </section>
+
+  <section class="card" id="actionsCard" style="display:none">
+    <h2 data-i18n="wallet.actions.title">Швидкі дії</h2>
+    <div class="nav-tiles">
+      <a href="exchange.html" class="nav-tile"><div class="nav-tile-icon">🔄</div><h3 data-i18n="wallet.act.exchange.title">Обміняти</h3><p data-i18n="wallet.act.exchange.desc">Конвертувати бали між брендами.</p></a>
+      <a href="pay.html"      class="nav-tile"><div class="nav-tile-icon">💳</div><h3 data-i18n="wallet.act.pay.title">Оплатити</h3><p data-i18n="wallet.act.pay.desc">Генерувати QR для касира.</p></a>
+      <a href="gift.html"     class="nav-tile"><div class="nav-tile-icon">🎁</div><h3 data-i18n="wallet.act.gift.title">Подарувати</h3><p data-i18n="wallet.act.gift.desc">Надіслати сертифікат за посиланням.</p></a>
+    </div>
+  </section>
+
+  <section class="card" id="historySection">
+    <h2 data-i18n="wallet.history.title">Історія операцій</h2>
+    <div id="historyList"><p class="loading" style="display:flex" data-i18n="common.loading">Завантаження…</p></div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p data-i18n="footer.demo">CertSwap Demo · Testnet Polygon Amoy</p>
+    <p class="tech-note"><a href="/terms.html" data-i18n="footer.terms">Terms of Use</a> · <a href="/privacy.html" data-i18n="footer.privacy">Privacy Policy</a> · <a href="/contacts.html" data-i18n="footer.contacts">Contacts</a></p>
+  </div>
+</footer>
+
+<script src="/js/i18n.js"></script>
+<script src="/config/features.js"></script>
+<script src="/js/vendor/ethers.min.js"></script>
+
+<script src="js/web3.js"></script>
+<script src="js/api.js"></script>
+<script src="js/provider.js"></script>
+<script src="/js/auth-guard.js"></script>
+<script>document.addEventListener("DOMContentLoaded", checkAuth);</script>
+<script>
+(async () => {
+  // Show wallet address if Web3 mode
+  const mode = Provider.getMode();
+  if (mode === 'web3') {
+    const desc = document.getElementById('walletDesc');
+    if (desc) desc.textContent = 'Баланси підключеного MetaMask гаманця.';
+  }
+
+  const data = await Provider.getBalance();
+  const list = document.getElementById('balanceList');
+
+  if (!data.success || !data.balances.length) {
+    list.innerHTML = '<p class="empty-state">Немає активованих сертифікатів.<br><a href="activate.html">Активувати перший →</a></p>';
+    return;
+  }
+
+  const total = data.balances.reduce((s, b) => s + b.total, 0);
+  document.getElementById('totalBalance').textContent = total.toLocaleString('uk-UA') + ' грн';
+  document.getElementById('totalBrands').textContent  = data.balances.length;
+  showEl(document.getElementById('balanceHero'));
+  showEl(document.getElementById('actionsCard'));
+
+  list.innerHTML = '<div class="balance-list">' +
+    data.balances.map(b => `
+      <div class="balance-item">
+        <div class="balance-brand">
+          <div class="balance-name">${b.brandName || b.brand}</div>
+          ${b.bonusBalance > 0 ? `<div class="balance-bonus">+${b.bonusBalance} грн бонус</div>` : ''}
+          ${b.expiresAt ? `<div class="balance-expires">до ${fmtDate(b.expiresAt)}</div>` : ''}
+        </div>
+        <div class="balance-amount">${(b.balance || 0).toLocaleString('uk-UA')} грн</div>
+        <div class="balance-actions">
+          <a href="pay.html?brand=${encodeURIComponent(b.brand)}" class="btn btn-small">Оплатити</a>
+          <a href="exchange.html?give=${encodeURIComponent(b.brand)}" class="btn btn-small btn-outline">Обміняти</a>
+        </div>
+      </div>`).join('') +
+  '</div>';
+})();
+
+// History — works in backend mode (direct API call)
+(async () => {
+  const hl = document.getElementById('historyList');
+  const mode = Provider.getMode();
+
+  if (mode === 'web3') {
+    // In Web3 mode, show blockchain events via Web3API
+    if (!window.Web3API) { hl.innerHTML = '<p class="empty-state">Підключіть MetaMask для перегляду історії.</p>'; return; }
+    // Poll for readiness
+    let attempts = 0;
+    while (!window.Web3API.isConnected() && attempts++ < 20) await new Promise(r => setTimeout(r, 500));
+    if (!window.Web3API.isConnected()) { hl.innerHTML = '<p class="text-error">MetaMask не підключено.</p>'; return; }
+    const events = await window.Web3API.getTransactionHistory(window.Web3API.getUserAddress());
+    if (!events || !events.length) { hl.innerHTML = '<p class="empty-state">Операцій ще немає.</p>'; return; }
+    renderHistory(hl, events.map(e => ({ type: e.type || 'event', brand: e.brand, amount: e.nominal || e.balance, timestamp: e.timestamp, tx_url: e.txHash ? 'https://amoy.polygonscan.com/tx/' + e.txHash : null })));
+  } else {
+    const data = await window.API.history().catch(e => ({ success: false, message: e.message }));
+    if (!data.success) { hl.innerHTML = '<p class="text-error">' + (data.message || 'Помилка') + '</p>'; return; }
+    const items = data.transactions || [];
+    if (!items.length) { hl.innerHTML = '<p class="empty-state">Операцій ще немає.</p>'; return; }
+    renderHistory(hl, items);
+  }
+})();
+
+function renderHistory(el, items) {
+  const typeIcon = { activate: '🎫', exchange: '🔄', pay: '💳', gift_create: '🎁', gift_claim: '📥', CodeActivated: '🎫', BalanceUpdated: '📊' };
+  el.innerHTML = '<div class="history-list">' + items.map(h => {
+    const icon = typeIcon[h.type] || '•';
+    const sub  = [h.brand, h.amount != null ? h.amount + ' грн' : ''].filter(Boolean).join(' · ');
+    const time = fmtDate(h.timestamp || h.created_at || h.ts);
+    const tx   = h.tx_url ? `<a class="tx-link" href="${h.tx_url}" target="_blank" rel="noopener">TX →</a>` : '';
+    return `<div class="history-item">
+      <div>
+        <p class="history-item-type">${icon} ${h.type || 'event'}</p>
+        ${sub  ? `<p class="history-item-sub">${sub}</p>`   : ''}
+        ${time ? `<p class="history-item-time">${time}</p>` : ''}
+      </div>${tx}
+    </div>`;
+  }).join('') + '</div>';
+}
+</script>
+<script src="/js/pwa.js"></script>
+</body>
+</html>

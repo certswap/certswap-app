@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html data-i18n-page="pay.page.title" lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1a56db">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Оплата · CertSwap</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="header-brand">
+      <div class="header-brand-logo">CS</div>
+      <span class="header-brand-name">CertSwap</span>
+    </a>
+    <div class="header-right">
+      <span class="header-page-title"><span data-i18n="pay.page.title">Оплата</span></span>
+      <a href="about.html" class="back-link" style="opacity:.6;font-size:12px"><span data-i18n="nav.about">Про CertSwap</span></a>
+      <a href="index.html" class="back-link"><span data-i18n="common.back">← На головну</span></a>
+    </div>
+  </div>
+</header>
+
+<section class="subhero">
+  <div class="container">
+    <div class="subhero-label"><span data-i18n="pay.subhero.label">Оплата · QR-токен</span></div>
+    <h1 class="subhero-title"><span data-i18n="pay.subhero.title">Оплата сертифікатом</span></h1>
+    <p class="subhero-desc"><span data-i18n="pay.subhero.desc">Генеруй платіжний QR-токен для пред'явлення касиру.</span></p>
+  </div>
+</section>
+
+<main class="container">
+
+  <section class="card highlight" id="payFormSection">
+    <h2 data-i18n="pay.card.title">Генерувати QR для оплати</h2>
+
+    <div class="form-group">
+      <label for="payBrand" data-i18n="pay.brand.label">Бренд</label>
+      <select id="payBrand"></select>
+      <p class="hint" id="brandBalance"></p>
+    </div>
+
+    <div class="form-group">
+      <label for="payAmount" data-i18n="pay.amount.label">Сума (грн)</label>
+      <input type="number" id="payAmount" placeholder="100" min="1" step="1">
+    </div>
+
+    <div id="web3ConnStatus" style="display:none;margin-bottom:12px;padding:8px 12px;border-radius:8px;font-size:var(--text-sm)"></div>
+    <button class="btn btn-lg" id="generatePayBtn" onclick="doGeneratePay()" style="width:100%"><span data-i18n="pay.btn">Генерувати QR для оплати</span></button>
+    <div id="payResult"></div>
+  </section>
+
+  <!-- QR section (shown after token generated) -->
+  <section class="card" id="payQRSection" style="display:none">
+    <h2 data-i18n="pay.qr.title">QR-код для оплати</h2>
+    <div style="text-align:center">
+      <div id="qrCode" style="display:inline-block;margin:16px auto;border:2px solid var(--cs-border);border-radius:8px;padding:12px;background:#fff"></div>
+      <p style="font-size:var(--text-sm);color:var(--cs-muted);margin:8px 0">
+        <strong id="payBrandDisplay"></strong> · <strong id="payAmountDisplay"></strong> грн
+      </p>
+      <div id="paymentTimer" style="font-size:var(--text-sm);color:var(--cs-amber);margin:8px 0">
+        <span data-i18n="pay.timer.label">Токен дійсний:</span> <strong id="timerSeconds">60</strong> <span data-i18n="pay.timer.unit">сек</span>
+      </div>
+      <p style="font-size:var(--text-xs);color:var(--cs-muted);word-break:break-all" id="paymentToken"></p>
+    </div>
+    <div class="btn-row mt-4">
+      <button class="btn" id="copyTokenBtn" onclick="copyPaymentToken()"><span data-i18n="pay.btn.copyHash">📋 Копіювати хеш</span></button>
+      <a id="merchantLink" href="merchant.html" class="btn" style="background:var(--cs-green)" target="_blank"><span data-i18n="pay.btn.openMerchant">🏪 Відкрити термінал мерчанта</span></a>
+    </div>
+    <div class="btn-row" style="margin-top:8px">
+      <button class="btn btn-outline" onclick="resetPayForm()"><span data-i18n="pay.btn.new">← Нова оплата</span></button>
+    </div>
+  </section>
+
+  <section class="card tech-info">
+    <h3 data-i18n="pay.how.title">Як це працює?</h3>
+    <ol class="info-list">
+      <li data-i18n="pay.how.li1">Обери бренд і введи суму.</li>
+      <li data-i18n="pay.how.li2">Система генерує одноразовий QR-токен.</li>
+      <li data-i18n="pay.how.li3">Пред'яви QR касиру — він підтвердить оплату через термінал мерчанта.</li>
+    </ol>
+    <div class="tech-note" data-i18n="pay.how.note">Токен дійсний 60 секунд. Після підтвердження касиром бали списуються.</div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p data-i18n="footer.demo">CertSwap Demo · Testnet Polygon Amoy</p>
+    <p class="tech-note"><a href="/terms.html" data-i18n="footer.terms">Terms of Use</a> · <a href="/privacy.html" data-i18n="footer.privacy">Privacy Policy</a> · <a href="/contacts.html" data-i18n="footer.contacts">Contacts</a></p>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="/js/i18n.js"></script>
+<script src="/config/features.js"></script>
+<script src="/js/vendor/ethers.min.js"></script>
+
+<script src="js/web3.js"></script>
+<script src="js/api.js"></script>
+<script src="js/provider.js"></script>
+<script src="/js/auth-guard.js"></script>
+<script>document.addEventListener("DOMContentLoaded", checkAuth);</script>
+<script>
+(async () => {
+  const brands = Provider.getBrands();
+  const sel    = document.getElementById('payBrand');
+  brands.forEach(b => sel.appendChild(new Option(b.name, b.id)));
+
+  const preBrand = getUrlParam('brand');
+  if (preBrand) sel.value = preBrand;
+
+  async function updateBalance() {
+    const balEl = document.getElementById('brandBalance');
+    if (!balEl) return;
+    try {
+      const b = await Provider.getBalanceByBrand(sel.value);
+      balEl.textContent = b.success ? 'Доступно: ' + (b.balance || 0) + ' грн' : '';
+    } catch { balEl.textContent = ''; }
+  }
+  sel.addEventListener('change', updateBalance);
+  updateBalance();
+
+  await Provider.configReady;
+  refreshWeb3Status();
+})();
+
+function copyPaymentToken() {
+  const hash = document.getElementById('paymentToken').textContent.trim();
+  if (!hash) return;
+  const btn = document.getElementById('copyTokenBtn');
+  navigator.clipboard.writeText(hash).then(() => {
+    const old = btn.textContent;
+    btn.textContent = '✅ Скопійовано';
+    setTimeout(() => { btn.textContent = old; }, 1500);
+  }).catch(() => alert(hash));
+}
+
+function refreshWeb3Status() {
+  const el = document.getElementById('web3ConnStatus');
+  if (!el) return;
+  const w3 = window.Web3API;
+  if (!Provider.isWeb3Enabled() || !w3) return;
+  if (w3.isConnected()) {
+    const addr = w3.getUserAddress ? w3.getUserAddress() : null;
+    el.style.cssText = 'display:block;margin-bottom:12px;padding:8px 12px;border-radius:8px;font-size:var(--text-sm);background:var(--cs-green-bg);color:var(--cs-green);border:1px solid var(--cs-green-border)';
+    el.textContent = '🦊 MetaMask: ' + (addr ? addr.slice(0, 6) + '…' + addr.slice(-4) : 'підключено');
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+let _timer = null;
+
+function resetPayForm() {
+  if (_timer) { clearInterval(_timer); _timer = null; }
+  showEl(document.getElementById('payFormSection'));
+  hideEl(document.getElementById('payQRSection'));
+  clearEl(document.getElementById('payResult'));
+  const btn = document.getElementById('generatePayBtn');
+  btn.disabled = false;
+  btn.textContent = 'Генерувати QR для оплати';
+}
+
+// Restore button on browser back-cache
+window.addEventListener('pageshow', e => { if (e.persisted) resetPayForm(); });
+
+async function doGeneratePay() {
+  const brand  = document.getElementById('payBrand').value;
+  const amount = Number(document.getElementById('payAmount').value);
+  if (!brand)              { alert('Оберіть бренд'); return; }
+  if (!amount || amount <= 0) { alert('Введіть суму'); return; }
+
+  const btn = document.getElementById('generatePayBtn');
+  const res = document.getElementById('payResult');
+  btn.disabled = true;
+  btn.textContent = 'Генерація токена…';
+  clearEl(res);
+  showLoading(res, 'Запит до блокчейну…');
+
+  const ttl  = parseInt((window.CertSwapConfig && window.CertSwapConfig._runtimeTTL) || localStorage.getItem('payment_token_ttl') || '60');
+  const data = await Provider.pay(brand, amount, ttl, {
+    onSent: () => { btn.textContent = '⛓️ Очікуємо підтвердження…'; }
+  });
+
+  refreshWeb3Status();
+
+  if (!data.success) {
+    showResult(res, { success: false, message: data.error || 'Помилка' });
+    btn.disabled = false;
+    btn.textContent = 'Генерувати QR для оплати';
+    return;
+  }
+
+  clearEl(res);
+  hideEl(document.getElementById('payFormSection'));
+  showEl(document.getElementById('payQRSection'));
+
+  const brandName = Provider.getBrands().find(b => b.id === brand);
+  document.getElementById('payBrandDisplay').textContent  = brandName ? brandName.name : brand;
+  document.getElementById('payAmountDisplay').textContent = amount;
+  document.getElementById('paymentToken').textContent     = data.tokenHash || '';
+  const merchantLink = document.getElementById('merchantLink');
+  if (merchantLink && data.tokenHash) {
+    merchantLink.href = window.location.origin + '/merchant.html?hash=' + encodeURIComponent(data.tokenHash);
+  }
+
+  // Generate QR
+  const qrEl = document.getElementById('qrCode');
+  qrEl.innerHTML = '';
+  if (data.tokenHash && typeof QRCode !== 'undefined') {
+    new QRCode(qrEl, {
+      text: window.location.origin + '/merchant.html?token=' + encodeURIComponent(data.tokenHash),
+      width: 200, height: 200,
+      colorDark: '#000000', colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  }
+
+  // Countdown timer
+  let seconds = ttl;
+  const timerEl    = document.getElementById('timerSeconds');
+  const timerBlock = document.getElementById('paymentTimer');
+  if (timerEl) timerEl.textContent = seconds;
+  _timer = setInterval(() => {
+    seconds--;
+    if (timerEl) timerEl.textContent = seconds;
+    if (seconds <= 0) {
+      clearInterval(_timer);
+      if (timerBlock) timerBlock.innerHTML = '<span style="color:var(--cs-red)">⏰ Час вийшов!</span>';
+    }
+  }, 1000);
+}
+</script>
+<script src="/js/pwa.js"></script>
+</body>
+</html>

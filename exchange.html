@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html data-i18n-page="exchange.page.title" lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1a56db">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Біржа · CertSwap</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .ex-tabs { display:flex; gap:4px; margin-bottom:16px; background:var(--cs-bg); border-radius:10px; padding:4px; }
+    .ex-tab  { flex:1; padding:10px 8px; border:none; border-radius:7px; cursor:pointer; font-size:var(--text-sm); font-weight:600; background:transparent; color:var(--cs-muted); transition:background .15s,color .15s; }
+    .ex-tab.active { background:var(--cs-surface); color:var(--cs-ink); box-shadow:0 1px 3px rgba(0,0,0,.08); }
+    .order-row { border:1px solid var(--cs-border); border-radius:8px; padding:14px; margin-bottom:10px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .order-brands { font-weight:700; font-size:var(--text-base); }
+    .order-give  { color:var(--cs-red); }
+    .order-arrow { color:var(--cs-muted); margin:0 6px; }
+    .order-want  { color:var(--cs-green); }
+    .order-meta  { font-size:var(--text-sm); color:var(--cs-muted); margin-top:4px; }
+    .order-time  { font-size:var(--text-xs); color:var(--cs-muted); margin-top:2px; }
+    .order-status-open      { color:var(--cs-blue); font-weight:600; }
+    .order-status-filled    { color:var(--cs-green); font-weight:600; }
+    .order-status-cancelled { color:var(--cs-muted); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="header-brand">
+      <div class="header-brand-logo">CS</div>
+      <span class="header-brand-name">CertSwap</span>
+    </a>
+    <div class="header-right">
+      <span class="header-page-title"><span data-i18n="exchange.page.title">Біржа</span></span>
+      <a href="about.html" class="back-link" style="opacity:.6;font-size:12px"><span data-i18n="nav.about">Про CertSwap</span></a>
+      <a href="index.html" class="back-link"><span data-i18n="common.back">← На головну</span></a>
+    </div>
+  </div>
+</header>
+
+<section class="subhero">
+  <div class="container">
+    <div class="subhero-label" data-i18n="exchange.subhero.label">P2P · Біржа ордерів</div>
+    <h1 class="subhero-title"><span data-i18n="exchange.subhero.title">Обмін сертифікатів</span></h1>
+    <p class="subhero-desc" data-i18n="exchange.subhero.desc">Створюй ордери обміну або виконуй ордери інших користувачів.</p>
+  </div>
+</section>
+
+<main class="container">
+
+  <div class="ex-tabs">
+    <button class="ex-tab active" id="tab-create" onclick="showTab('create')"><span data-i18n="exchange.tab.create">📝 Створити ордер</span></button>
+    <button class="ex-tab"        id="tab-open"   onclick="showTab('open')"><span data-i18n="exchange.tab.open">📋 Відкриті ордери</span></button>
+    <button class="ex-tab"        id="tab-mine"   onclick="showTab('mine')"><span data-i18n="exchange.tab.mine">👤 Мої ордери</span></button>
+  </div>
+
+  <!-- Tab 1: Create order -->
+  <div id="panel-create">
+    <section class="card highlight">
+      <h2 data-i18n="exchange.create.title">Створити ордер</h2>
+
+      <div class="form-group">
+        <label for="giveSelect" data-i18n="exchange.create.give.label">Віддаю (бренд)</label>
+        <select id="giveSelect"></select>
+        <p class="hint" id="giveBalance"></p>
+      </div>
+
+      <div class="form-group">
+        <label for="giveAmount" data-i18n="exchange.create.giveAmount.label">Сума до обміну (грн)</label>
+        <input type="number" id="giveAmount" placeholder="100" min="1" step="1">
+      </div>
+
+      <div class="form-group">
+        <label for="getSelect" data-i18n="exchange.create.get.label">Хочу отримати (бренд)</label>
+        <select id="getSelect"></select>
+      </div>
+
+      <div class="form-group">
+        <label for="wantAmount" data-i18n="exchange.create.wantAmount.label">Хочу отримати (сума, грн)</label>
+        <input type="number" id="wantAmount" placeholder="0" min="1" step="1" readonly
+          style="opacity:0.6;cursor:not-allowed">
+      </div>
+
+      <div id="ratePreview" style="text-align:center;padding:10px;background:var(--cs-bg);border-radius:8px;font-size:var(--text-sm);color:var(--cs-muted);margin-bottom:16px" data-i18n="exchange.create.rateNote">
+        Курс обміну 1:1. Курсовий алгоритм буде додано після запуску платформи.
+      </div>
+
+      <button class="btn btn-lg" id="createBtn" onclick="doCreateOrder()" style="width:100%"><span data-i18n="exchange.create.btn">📝 Розмістити ордер</span></button>
+      <div id="createResult"></div>
+    </section>
+  </div>
+
+  <!-- Tab 2: Open orders -->
+  <div id="panel-open" style="display:none">
+    <section class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <h2 style="margin:0" data-i18n="exchange.open.title">Відкриті ордери</h2>
+        <button class="btn btn-outline" id="refreshOpenBtn" onclick="loadOpenOrders()"><span data-i18n="exchange.btn.refresh">🔄 Оновити</span></button>
+      </div>
+      <div id="openOrdersList"><p style="color:var(--cs-muted);text-align:center;padding:24px" data-i18n="common.loading">Завантаження…</p></div>
+    </section>
+  </div>
+
+  <!-- Tab 3: My orders -->
+  <div id="panel-mine" style="display:none">
+    <section class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <h2 style="margin:0" data-i18n="exchange.mine.title">Мої ордери</h2>
+        <button class="btn btn-outline" id="refreshMineBtn" onclick="loadMyOrders()"><span data-i18n="exchange.btn.refresh">🔄 Оновити</span></button>
+      </div>
+      <div id="myOrdersList"><p style="color:var(--cs-muted);text-align:center;padding:24px" data-i18n="common.loading">Завантаження…</p></div>
+    </section>
+  </div>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p data-i18n="footer.demo">CertSwap Demo · Testnet Polygon Amoy</p>
+    <p class="tech-note"><a href="/terms.html" data-i18n="footer.terms">Terms of Use</a> · <a href="/privacy.html" data-i18n="footer.privacy">Privacy Policy</a> · <a href="/contacts.html" data-i18n="footer.contacts">Contacts</a></p>
+  </div>
+</footer>
+
+<script src="/js/i18n.js"></script>
+<script src="/config/features.js"></script>
+<script src="/js/vendor/ethers.min.js"></script>
+<script src="js/web3.js"></script>
+<script src="js/api.js"></script>
+<script src="js/provider.js"></script>
+<script src="/js/auth-guard.js"></script>
+<script>document.addEventListener("DOMContentLoaded", checkAuth);</script>
+<script>
+// ── Init brands ───────────────────────────────────────────────────────────
+(function () {
+  const brands = Provider.getBrands();
+  const giveEl = document.getElementById('giveSelect');
+  const getEl  = document.getElementById('getSelect');
+  brands.forEach(b => {
+    giveEl.appendChild(new Option(b.name, b.id));
+    getEl.appendChild(new Option(b.name, b.id));
+  });
+  if (brands.length > 1) getEl.selectedIndex = 1;
+
+  const preGive = getUrlParam('give') || getUrlParam('brand');
+  if (preGive) giveEl.value = preGive;
+
+  async function updateGiveBalance() {
+    try {
+      const b = await Provider.getBalanceByBrand(giveEl.value);
+      document.getElementById('giveBalance').textContent = b.success ? 'Доступно: ' + (b.balance || 0) + ' грн' : '';
+    } catch { document.getElementById('giveBalance').textContent = ''; }
+  }
+  giveEl.addEventListener('change', updateGiveBalance);
+  updateGiveBalance();
+
+  function syncWantAmount() {
+    document.getElementById('wantAmount').value = document.getElementById('giveAmount').value || '';
+  }
+  document.getElementById('giveAmount').addEventListener('input', syncWantAmount);
+})();
+
+// ── Tab switching ─────────────────────────────────────────────────────────
+const TABS = ['create', 'open', 'mine'];
+
+function showTab(name) {
+  TABS.forEach(t => {
+    document.getElementById('panel-' + t).style.display = t === name ? '' : 'none';
+    document.getElementById('tab-' + t).classList.toggle('active', t === name);
+  });
+  if (name === 'open') loadOpenOrders();
+  if (name === 'mine') loadMyOrders();
+}
+
+// ── Create order ──────────────────────────────────────────────────────────
+async function doCreateOrder() {
+  const giveBrand  = document.getElementById('giveSelect').value;
+  const getBrand   = document.getElementById('getSelect').value;
+  const giveAmount = Number(document.getElementById('giveAmount').value);
+
+  if (giveBrand === getBrand)         { alert('Оберіть різні бренди'); return; }
+  if (!giveAmount || giveAmount <= 0) { alert('Введіть суму до обміну'); return; }
+
+  const btn = document.getElementById('createBtn');
+  const res = document.getElementById('createResult');
+  btn.disabled = true; btn.textContent = 'Розміщення…';
+  clearEl(res);
+
+  try {
+    const data = await Provider.createOrder(giveBrand, giveAmount, getBrand, giveAmount);
+    btn.disabled = false; btn.textContent = '📝 Розмістити ордер';
+    if (data.success) {
+      showResult(res, { success: true, html: '✅ <strong>Ордер розміщено!</strong><br>ID: ' + (data.orderId || '').slice(0, 8) + '…' });
+      document.getElementById('giveAmount').value = '';
+      document.getElementById('wantAmount').value = '';
+    } else {
+      showResult(res, { success: false, message: data.error || data.message || 'Помилка' });
+    }
+  } catch (err) {
+    btn.disabled = false; btn.textContent = '📝 Розмістити ордер';
+    if (err && err.message !== 'cancelled') {
+      showResult(res, { success: false, message: err.message || 'Помилка' });
+    }
+  }
+}
+
+// ── Open orders ───────────────────────────────────────────────────────────
+async function loadOpenOrders() {
+  const el  = document.getElementById('openOrdersList');
+  const btn = document.getElementById('refreshOpenBtn');
+  btn.disabled = true; btn.textContent = 'Завантаження…';
+  el.innerHTML = '<p style="color:var(--cs-muted);text-align:center;padding:24px">Завантаження…</p>';
+
+  const data = await api('/api/exchange/orders');
+  btn.disabled = false; btn.textContent = '🔄 Оновити';
+
+  if (!data.success) {
+    el.innerHTML = '<p style="color:var(--cs-red);text-align:center;padding:24px">' + (data.message || 'Помилка завантаження') + '</p>';
+    return;
+  }
+  if (!data.orders || !data.orders.length) {
+    el.innerHTML = '<p style="color:var(--cs-muted);text-align:center;padding:24px">Немає відкритих ордерів</p>';
+    return;
+  }
+
+  el.innerHTML = data.orders.map(o => `
+    <div class="order-row">
+      <div style="flex:1;min-width:180px">
+        <div class="order-brands">
+          <span class="order-give">${esc(o.give_brand)}</span>
+          <span class="order-arrow">→</span>
+          <span class="order-want">${esc(o.want_brand)}</span>
+        </div>
+        <div class="order-meta">
+          Віддаю: <strong>${o.give_amount} грн</strong> · Хочу: <strong>${o.want_amount} грн</strong>
+          · Курс: ${(Number(o.want_amount) / Number(o.give_amount)).toFixed(3)}
+        </div>
+        <div class="order-time">${fmtAgo(o.created_at)}</div>
+      </div>
+      <button class="btn btn-success" id="fill-${o.order_id}" onclick="doFillOrder('${o.order_id}')">Виконати</button>
+    </div>
+  `).join('');
+}
+
+async function doFillOrder(orderId) {
+  const btn = document.getElementById('fill-' + orderId);
+  if (btn) { btn.disabled = true; btn.textContent = 'Виконання…'; }
+
+  const data = await api('/api/exchange/order/fill', {
+    method: 'POST',
+    body: JSON.stringify({ orderId }),
+  });
+
+  if (data.success) {
+    alert('✅ Ордер виконано!\nВіддали: ' + data.gave.amount + ' ' + data.gave.brand + '\nОтримали: ' + data.received.amount + ' ' + data.received.brand);
+    loadOpenOrders();
+  } else {
+    alert('Помилка: ' + (data.message || 'Невідома помилка'));
+    if (btn) { btn.disabled = false; btn.textContent = 'Виконати'; }
+  }
+}
+
+// ── My orders ─────────────────────────────────────────────────────────────
+async function loadMyOrders() {
+  const el  = document.getElementById('myOrdersList');
+  const btn = document.getElementById('refreshMineBtn');
+  btn.disabled = true; btn.textContent = 'Завантаження…';
+  el.innerHTML = '<p style="color:var(--cs-muted);text-align:center;padding:24px">Завантаження…</p>';
+
+  const data = await api('/api/exchange/orders/mine');
+  btn.disabled = false; btn.textContent = '🔄 Оновити';
+
+  if (!data.success) {
+    el.innerHTML = '<p style="color:var(--cs-red);text-align:center;padding:24px">' + (data.message || 'Помилка завантаження') + '</p>';
+    return;
+  }
+  if (!data.orders || !data.orders.length) {
+    el.innerHTML = '<p style="color:var(--cs-muted);text-align:center;padding:24px">У вас немає ордерів</p>';
+    return;
+  }
+
+  const statusHtml = {
+    open:      '<span class="order-status-open">● Відкритий</span>',
+    filled:    '<span class="order-status-filled">✅ Виконано</span>',
+    cancelled: '<span class="order-status-cancelled">✖ Скасовано</span>',
+  };
+
+  el.innerHTML = data.orders.map(o => `
+    <div class="order-row">
+      <div style="flex:1;min-width:180px">
+        <div class="order-brands">
+          <span class="order-give">${esc(o.give_brand)}</span>
+          <span class="order-arrow">→</span>
+          <span class="order-want">${esc(o.want_brand)}</span>
+        </div>
+        <div class="order-meta">
+          Віддаю: <strong>${o.give_amount} грн</strong> · Хочу: <strong>${o.want_amount} грн</strong>
+        </div>
+        <div class="order-meta" style="margin-top:4px">${statusHtml[o.status] || esc(o.status)}</div>
+        <div class="order-time">${fmtAgo(o.created_at)}</div>
+      </div>
+      ${o.status === 'open' ? `<button class="btn btn-outline" id="cancel-${o.order_id}" onclick="doCancelOrder('${o.order_id}')">Скасувати</button>` : ''}
+    </div>
+  `).join('');
+}
+
+async function doCancelOrder(orderId) {
+  if (!confirm('Скасувати ордер? Кошти будуть повернуті.')) return;
+  const btn = document.getElementById('cancel-' + orderId);
+  if (btn) { btn.disabled = true; btn.textContent = 'Скасування…'; }
+
+  const data = await api('/api/exchange/order/cancel', {
+    method: 'POST',
+    body: JSON.stringify({ orderId }),
+  });
+
+  if (data.success) {
+    loadMyOrders();
+  } else {
+    alert('Помилка: ' + (data.message || 'Невідома помилка'));
+    if (btn) { btn.disabled = false; btn.textContent = 'Скасувати'; }
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function fmtAgo(iso) {
+  if (!iso) return '';
+  const m = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+  if (m < 1)  return 'щойно';
+  if (m < 60) return m + ' хв тому';
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + ' год тому';
+  return Math.floor(h / 24) + ' дн тому';
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+<script src="/js/pwa.js"></script>
+</body>
+</html>

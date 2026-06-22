@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1a56db">
+  <title>Privacy Policy · CertSwap</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="header-brand">
+      <div class="header-brand-logo">CS</div>
+      <span class="header-brand-name">CertSwap</span>
+    </a>
+    <div class="header-right">
+      <span class="header-page-title">Privacy Policy</span>
+      <a href="index.html" class="back-link">← Home</a>
+    </div>
+  </div>
+</header>
+
+<section class="subhero">
+  <div class="container">
+    <div class="subhero-label">Legal · Privacy</div>
+    <h1 class="subhero-title">Privacy Policy</h1>
+    <p class="subhero-desc">How CertSwap collects, uses, and protects your data.</p>
+  </div>
+</section>
+
+<main class="container" style="max-width:760px">
+
+  <section class="card">
+    <p class="text-muted" style="font-size:var(--text-sm)">Effective date: 2026-06-12 · CertSwap Demo v2.0</p>
+
+    <h2 style="margin-top:24px">1. Data We Collect</h2>
+
+    <h3 style="margin-top:16px;font-size:var(--text-base)">a) Email address (optional)</h3>
+    <p>If you choose to sign in with email, we store your email address linked to your account identifier. Email is used solely for authentication (magic link delivery) and account recovery. Providing an email is voluntary — you can use the platform without it.</p>
+
+    <h3 style="margin-top:16px;font-size:var(--text-base)">b) Device identifier (UUID)</h3>
+    <p>On first visit, a random UUID is generated and stored in your browser's <code>localStorage</code>. This identifier allows the platform to associate your balances and transaction history across sessions on the same device. It is not linked to your name or any external identity unless you choose to add an email.</p>
+
+    <h3 style="margin-top:16px;font-size:var(--text-base)">c) IP address and user-agent (on QR scan events)</h3>
+    <p>When a certificate QR code is scanned (at the point of activation or verification), the platform records:</p>
+    <ul class="info-list">
+      <li>IP address of the scanning device</li>
+      <li>User-agent string (browser / OS type)</li>
+      <li>Timestamp and code hash</li>
+    </ul>
+    <p>This data is collected <strong>for anti-counterfeit purposes only</strong>: to detect duplicate scans and identify potentially forged certificates. It is not used for advertising or behavioural profiling.</p>
+
+    <h3 style="margin-top:16px;font-size:var(--text-base)">d) Transaction records</h3>
+    <p>All activations, payments, exchanges, and gifts generate transaction records linked to your UUID. These records are necessary to maintain your balance and provide a transaction history.</p>
+
+    <h2 style="margin-top:24px">2. How We Use Your Data</h2>
+    <table style="width:100%;border-collapse:collapse;font-size:var(--text-sm);margin-top:8px">
+      <thead>
+        <tr style="background:var(--cs-bg);text-align:left">
+          <th style="padding:8px 12px;border:1px solid var(--cs-border)">Data</th>
+          <th style="padding:8px 12px;border:1px solid var(--cs-border)">Purpose</th>
+          <th style="padding:8px 12px;border:1px solid var(--cs-border)">Legal basis (GDPR)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding:8px 12px;border:1px solid var(--cs-border)">Email</td>
+          <td style="padding:8px 12px;border:1px solid var(--cs-border)">Authentication, account recovery</td>
+          <td style="padding:8px 12px;border:1px solid var(--cs-border)">Consent (Art. 6(1)(a))</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;border:1px solid var(--cs-border)">UUID</td>
+          <td style="padding:8px 12px;border:1px solid var(--cs-border)">Session identity, balance tracking</td>
+          <td style="padding:8px 12px;border:1px solid var(--cs-border)">Legitimate interest (Art. 6(1)(f))</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;border:1px solid var(--cs-border)">IP / user-agent</td>
+          <td style="padding:8px 12px;border:1px solid var(--cs-border)">Anti-counterfeit, duplicate scan detection</td>
+          <td style="padding:8px 12px;border:1px solid var(--cs-border)">Legitimate interest (Art. 6(1)(f))</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;border:1px solid var(--cs-border)">Transactions</td>
+          <td style="padding:8px 12px;border:1px solid var(--cs-border)">Balance integrity, audit trail</td>
+          <td style="padding:8px 12px;border:1px solid var(--cs-border)">Contract performance (Art. 6(1)(b))</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2 style="margin-top:24px">3. We Do Not Sell or Share Your Data</h2>
+    <p>CertSwap does not sell, rent, or trade personal data to third parties for commercial purposes. Data is not shared with advertising networks, data brokers, or analytics platforms.</p>
+    <p>Data may be shared only in the following circumstances:</p>
+    <ul class="info-list">
+      <li>With hosting infrastructure providers (Vercel, Render) under data processing agreements</li>
+      <li>When required by applicable law or a valid legal order</li>
+    </ul>
+
+    <h2 style="margin-top:24px">4. Blockchain Records</h2>
+    <p>Transactions confirmed on the Polygon blockchain are <strong>permanently public and immutable</strong>. Blockchain records include wallet addresses and transaction parameters, but not email addresses or UUIDs. Once written to the blockchain, these records cannot be erased — this is a technical property of the blockchain, not a policy choice. If you use Web3 mode, your public wallet address is visible on-chain.</p>
+
+    <h2 style="margin-top:24px">5. Your Rights Under GDPR</h2>
+    <p>If you are located in the European Economic Area (EEA), you have the following rights regarding your personal data:</p>
+    <ul class="info-list">
+      <li><strong>Access</strong> — request a copy of the data we hold about you</li>
+      <li><strong>Rectification</strong> — request correction of inaccurate data</li>
+      <li><strong>Erasure ("right to be forgotten")</strong> — request deletion of your account and associated data; note that on-chain records cannot be deleted</li>
+      <li><strong>Portability</strong> — receive your data in a machine-readable format</li>
+      <li><strong>Objection</strong> — object to processing based on legitimate interest</li>
+      <li><strong>Withdrawal of consent</strong> — withdraw consent for email-based processing at any time</li>
+    </ul>
+    <p>To exercise any of these rights, contact us via the <a href="contacts.html">Contacts</a> page. We will respond within 30 days.</p>
+
+    <h2 style="margin-top:24px">6. Data Retention</h2>
+    <p>Off-chain data (UUID, email, transactions) is retained for as long as your account is active or as necessary to resolve disputes. You may request deletion at any time. Blockchain records are retained indefinitely by the nature of the technology.</p>
+
+    <h2 style="margin-top:24px">7. Cookies and Local Storage</h2>
+    <p>CertSwap uses <code>localStorage</code> to store your device UUID and language preference. No third-party tracking cookies are set. Session cookies may be used for authentication state and expire when you close the browser.</p>
+
+    <h2 style="margin-top:24px">8. Contact for Privacy Matters</h2>
+    <p>For privacy-related requests, see the <a href="contacts.html">Contacts</a> page.</p>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p data-i18n="footer.demo">CertSwap Demo · Testnet Polygon Amoy</p>
+    <p class="tech-note"><a href="/terms.html" data-i18n="footer.terms">Terms of Use</a> · <a href="/privacy.html" data-i18n="footer.privacy">Privacy Policy</a> · <a href="/contacts.html" data-i18n="footer.contacts">Contacts</a></p>
+  </div>
+</footer>
+
+<script src="/js/i18n.js"></script>
+<script src="/config/features.js"></script>
+<script src="/js/pwa.js"></script>
+</body>
+</html>

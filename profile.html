@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html data-i18n-page="profile.page.title" lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1a56db">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Профіль · CertSwap</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .mode-card {
+      border-radius: var(--radius);
+      border: 2px solid transparent;
+      padding: 24px;
+      margin-bottom: 20px;
+      background: var(--cs-surface);
+      box-shadow: var(--shadow-sm);
+      animation: fadeUp .22s ease-out both;
+    }
+    .mode-card-web3    { border-color: rgba(26,86,219,.3);  background: linear-gradient(145deg,#fff 60%,#eff4ff); }
+    .mode-card-backend { border-color: rgba(5,150,105,.3);  background: linear-gradient(145deg,#fff 60%,#ecfdf5); }
+    .mode-card-bridge  { border-color: rgba(139,92,246,.3); background: linear-gradient(145deg,#fff 60%,#f5f3ff); }
+
+    .mode-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--cs-border);
+    }
+    .mode-card-icon {
+      font-size: 28px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .mode-card-header h2 {
+      margin: 0;
+      font-size: var(--text-xl);
+      font-weight: 700;
+      color: var(--cs-ink);
+    }
+    .mode-card-header p {
+      margin: 3px 0 0;
+      font-size: var(--text-xs);
+      color: var(--cs-muted);
+    }
+
+    .id-box {
+      background: var(--cs-bg);
+      border: 1px solid var(--cs-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-family: 'Menlo','Consolas','Monaco',monospace;
+      font-size: var(--text-sm);
+      word-break: break-all;
+      color: var(--cs-ink);
+    }
+
+    .field-label {
+      font-size: var(--text-xs);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      color: var(--cs-muted);
+      margin-bottom: 6px;
+    }
+
+    .bridge-divider {
+      border: none;
+      border-top: 2px dashed var(--cs-border);
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="header-brand">
+      <div class="header-brand-logo">CS</div>
+      <span class="header-brand-name">CertSwap</span>
+    </a>
+    <div class="header-right">
+      <span class="header-page-title"><span data-i18n="profile.page.title">Профіль</span></span>
+      <a href="about.html" class="back-link" style="opacity:.6;font-size:12px"><span data-i18n="nav.about">Про CertSwap</span></a>
+      <a href="index.html" class="back-link"><span data-i18n="common.back">← На головну</span></a>
+    </div>
+  </div>
+</header>
+
+<section class="subhero">
+  <div class="container">
+    <div class="subhero-label" data-i18n="profile.subhero.label">Обліковий запис</div>
+    <h1 class="subhero-title" data-i18n="profile.subhero.title">Мій профіль</h1>
+    <p class="subhero-desc" data-i18n="profile.subhero.desc">Ідентифікатор та режим роботи.</p>
+  </div>
+</section>
+
+<main class="container">
+
+  <!-- Email verification banner (injected by JS if ?email_verified param) -->
+  <div id="emailBanner"></div>
+  <!-- Registration prompt (injected by JS if ?next= param) -->
+  <div id="nextBanner"></div>
+
+  <!-- ── Web3 only mode ────────────────────────────────────────────────────── -->
+  <div id="web3OnlyProfile" style="display:none">
+    <div class="mode-card mode-card-web3">
+      <div class="mode-card-header">
+        <div class="mode-card-icon">⛓️</div>
+        <div>
+          <h2 data-i18n="profile.web3only.title">Web3 режим (MetaMask)</h2>
+          <p data-i18n="profile.web3only.desc">Ідентифікація через особистий гаманець. Ключі тільки у вас.</p>
+        </div>
+      </div>
+
+      <div style="margin-bottom:14px">
+        <div class="field-label" data-i18n="profile.wallet.addr.label">Адреса гаманця</div>
+        <div class="id-box" id="w3Address">Підключення…</div>
+      </div>
+
+      <div id="w3Status"></div>
+    </div>
+  </div>
+
+  <!-- ── Backend only mode ─────────────────────────────────────────────────── -->
+  <div id="backendOnlyProfile" style="display:none">
+    <div class="mode-card mode-card-backend">
+      <div class="mode-card-header">
+        <div class="mode-card-icon">🏛️</div>
+        <div>
+          <h2 data-i18n="profile.backendonly.title">Backend режим (нотаріус)</h2>
+          <p data-i18n="profile.backendonly.desc">Блокчейн невидимий. Ідентифікація через UUID сесії або email.</p>
+        </div>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div class="field-label" data-i18n="profile.session.id.label">Ідентифікатор сесії</div>
+        <div class="id-box" id="beUUID">—</div>
+        <p style="font-size:var(--text-xs);color:var(--cs-muted);margin:6px 0 0" data-i18n="profile.id.desc">UUID зберігається у браузері (localStorage).</p>
+      </div>
+
+      <div style="border-top:1px solid var(--cs-border);padding-top:18px">
+        <h3 style="margin:0 0 4px;font-size:var(--text-base);font-weight:600" data-i18n="profile.email.title">Email</h3>
+        <p style="font-size:var(--text-sm);color:var(--cs-muted);margin:0 0 12px;line-height:1.5" data-i18n="profile.email.desc">
+          Прив'яжіть email для відновлення доступу з будь-якого пристрою.
+        </p>
+        <div id="beEmailStatus"></div>
+        <form id="beEmailForm" style="display:none;margin-top:12px">
+          <input id="beEmailInput" type="text" inputmode="email" placeholder="you@example.com" autocomplete="email"
+            style="display:block;width:100%;box-sizing:border-box;min-height:48px;padding:12px 16px;font-size:16px;background:#1e293b;color:#f1f5f9;border:1px solid #475569;border-radius:8px;outline:none;margin-bottom:10px">
+          <button type="submit" class="btn" id="beEmailBtn" data-i18n="profile.email.btn">Зберегти email</button>
+          <div id="beEmailResult" style="display:none;margin-top:10px"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Bridge mode ───────────────────────────────────────────────────────── -->
+  <div id="bridgeProfile" style="display:none">
+    <div class="mode-card mode-card-bridge">
+      <div class="mode-card-header">
+        <div class="mode-card-icon"><svg width="48" height="48" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="lc"><circle cx="35" cy="50" r="32"/></clipPath>
+    <clipPath id="rc"><circle cx="65" cy="50" r="32"/></clipPath>
+  </defs>
+  <circle cx="35" cy="50" r="32" fill="#3b82f6"/>
+  <circle cx="65" cy="50" r="32" fill="#8b5cf6"/>
+  <circle cx="35" cy="50" r="32" clip-path="url(#rc)" fill="#06b6d4"/>
+  <circle cx="65" cy="50" r="32" clip-path="url(#lc)" fill="#06b6d4"/>
+  <text x="50" y="57" text-anchor="middle" fill="#ffffff" font-size="18" font-weight="500">⇄</text>
+</svg></div>
+        <div>
+          <h2 data-i18n="profile.bridge.title">CertSwap Bridge</h2>
+          <p data-i18n="profile.bridge.desc">Ви ідентифіковані двома способами. Спосіб запису обирається при кожній транзакції.</p>
+        </div>
+      </div>
+
+      <!-- Web3 block -->
+      <div class="field-label" data-i18n="profile.bridge.web3.label">⛓️ MetaMask</div>
+      <div style="margin-bottom:14px">
+        <div class="id-box" id="bWeb3Address">Підключення…</div>
+      </div>
+      <div id="bWeb3Status" style="margin-bottom:16px"></div>
+
+      <hr class="bridge-divider">
+
+      <!-- Backend block -->
+      <div class="field-label" data-i18n="profile.bridge.backend.label">🏛️ UUID / Email</div>
+      <div style="margin-bottom:14px">
+        <div class="id-box" id="bUUID">—</div>
+        <p style="font-size:var(--text-xs);color:var(--cs-muted);margin:6px 0 0" data-i18n="profile.id.desc">UUID зберігається у браузері (localStorage).</p>
+      </div>
+
+      <h3 style="margin:0 0 4px;font-size:var(--text-base);font-weight:600" data-i18n="profile.email.title">Email</h3>
+      <p style="font-size:var(--text-sm);color:var(--cs-muted);margin:0 0 12px;line-height:1.5" data-i18n="profile.email.desc">
+        Прив'яжіть email для відновлення доступу з будь-якого пристрою.
+      </p>
+      <div id="bEmailStatus"></div>
+      <form id="bEmailForm" style="display:none;margin-top:12px">
+        <input id="bEmailInput" type="text" inputmode="email" placeholder="you@example.com" autocomplete="email"
+          style="display:block;width:100%;box-sizing:border-box;min-height:48px;padding:12px 16px;font-size:16px;background:#1e293b;color:#f1f5f9;border:1px solid #475569;border-radius:8px;outline:none;margin-bottom:10px">
+        <button type="submit" class="btn" id="bEmailBtn" data-i18n="profile.email.btn">Зберегти email</button>
+        <div id="bEmailResult" style="display:none;margin-top:10px"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Sign Out ─────────────────────────────────────────────────────────── -->
+  <div id="signOutSection" style="display:none;margin-top:8px">
+    <div class="mode-card" style="border-color:rgba(239,68,68,.25)">
+      <div class="mode-card-header" style="margin-bottom:12px;padding-bottom:12px">
+        <div class="mode-card-icon">🔓</div>
+        <div>
+          <h2 style="font-size:var(--text-base)" data-i18n="profile.signout.title">Sign Out</h2>
+          <p data-i18n="profile.signout.desc">Очистити дані ідентифікації та вийти.</p>
+        </div>
+      </div>
+      <div id="signOutInfo" style="font-size:var(--text-sm);color:var(--cs-muted);margin-bottom:16px;line-height:1.6"></div>
+      <button id="signOutBtn" class="btn" style="background:#dc2626;border-color:#dc2626;color:#fff" data-i18n="profile.signout.btn">
+        🔓 Sign Out
+      </button>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p data-i18n="footer.demo">CertSwap Demo · Testnet Polygon Amoy</p>
+    <p class="tech-note"><a href="/terms.html" data-i18n="footer.terms">Terms of Use</a> · <a href="/privacy.html" data-i18n="footer.privacy">Privacy Policy</a> · <a href="/contacts.html" data-i18n="footer.contacts">Contacts</a></p>
+  </div>
+</footer>
+
+<script src="/js/i18n.js"></script>
+<script src="/config/features.js"></script>
+<script src="/js/vendor/ethers.min.js"></script>
+<script src="js/web3.js"></script>
+<script src="js/api.js"></script>
+<script src="js/provider.js"></script>
+<script>
+'use strict';
+
+// ── Email verification callback ───────────────────────────────────────────
+(function () {
+  const p       = new URLSearchParams(window.location.search);
+  const verified = p.get('email_verified');
+  const errCode  = p.get('email_error');
+  const addr     = p.get('email');
+  if (!verified && !errCode) return;
+
+  window.history.replaceState({}, '', '/profile.html');
+
+  const el = document.getElementById('emailBanner');
+  if (!el) return;
+  if (verified === '1') {
+    el.className = 'result-valid';
+    el.style.cssText = 'margin:16px 0;padding:14px 16px;border-radius:8px';
+    el.innerHTML = '✅ <strong>Email підтверджено' + (addr ? ': ' + addr : '') + '</strong>';
+  } else {
+    const msgs = { expired: 'Посилання застаріло або вже використано.', invalid: 'Невірне посилання.', server: 'Помилка сервера.' };
+    el.className = 'result-invalid';
+    el.style.cssText = 'margin:16px 0;padding:14px 16px;border-radius:8px';
+    el.innerHTML = '❌ ' + (msgs[errCode] || 'Помилка підтвердження email.');
+  }
+})();
+
+// ── Main profile render ───────────────────────────────────────────────────
+(async function () {
+  await Provider.configReady;
+
+  const web3On   = Provider.isWeb3Enabled();
+  const backendOn = Provider.isBackendEnabled();
+  const bridgeOn  = Provider.isBridgeAvailable();
+
+  if (bridgeOn) {
+    document.getElementById('bridgeProfile').style.display = 'block';
+    document.getElementById('bUUID').textContent = LOCAL_USER_ID || 'Недоступно';
+    initWeb3Block('bWeb3Address', 'bWeb3Status');
+    await initEmailSection('bEmailStatus', 'bEmailForm', 'bEmailInput', 'bEmailResult', 'bEmailBtn');
+  } else if (web3On) {
+    document.getElementById('web3OnlyProfile').style.display = 'block';
+    initWeb3Block('w3Address', 'w3Status');
+  } else if (backendOn) {
+    document.getElementById('backendOnlyProfile').style.display = 'block';
+    document.getElementById('beUUID').textContent = LOCAL_USER_ID || 'Недоступно';
+    await initEmailSection('beEmailStatus', 'beEmailForm', 'beEmailInput', 'beEmailResult', 'beEmailBtn');
+  }
+})();
+
+// ── Web3 block init ───────────────────────────────────────────────────────
+function markWeb3Connected() {
+  // initWeb3Block() connects to MetaMask directly (without going through the
+  // bridge overlay in provider.js), so the flag never got set for Web3-only
+  // profiles — leaving the profile chip and Sign Out section unaware that
+  // the user is actually identified.
+  localStorage.setItem('certswap_metamask_connected', '1');
+  if (window.updateProfileChip) window.updateProfileChip();
+  if (window.refreshSignOutSection) window.refreshSignOutSection();
+}
+
+async function initWeb3Block(addressId, statusId) {
+  const addrEl = document.getElementById(addressId);
+  const statEl = document.getElementById(statusId);
+
+  // MetaMask not installed
+  if (typeof window.ethereum === 'undefined') {
+    addrEl.textContent = 'MetaMask не встановлений';
+    statEl.innerHTML =
+      '<div class="result-invalid" style="display:block">' +
+      'Для Web3 режиму потрібен MetaMask.<br>' +
+      '<a href="https://metamask.io/" target="_blank" rel="noopener" ' +
+         'class="btn btn-small" style="margin-top:8px">Встановити MetaMask →</a>' +
+      '</div>';
+    return;
+  }
+
+  // Already connected this session
+  if (window.Web3API && window.Web3API.isConnected()) {
+    const addr = window.Web3API.getUserAddress();
+    addrEl.textContent = addr || 'Невідомо';
+    statEl.innerHTML = '<div class="result-valid" style="display:block">✅ Підключено до MetaMask</div>';
+    markWeb3Connected();
+    return;
+  }
+
+  // Not connected yet, and never was (e.g. right after Sign Out) — don't
+  // auto-prompt MetaMask on every page load, show a manual connect button.
+  if (!localStorage.getItem('certswap_metamask_connected')) {
+    addrEl.textContent = 'Не підключено';
+    statEl.innerHTML =
+      '<button class="btn btn-small" ' +
+        'onclick="connectWeb3Block(\'' + addressId + '\',\'' + statusId + '\')">🦊 Підключити MetaMask</button>';
+    return;
+  }
+
+  // Previously connected — auto-init
+  await connectWeb3Block(addressId, statusId);
+}
+
+async function connectWeb3Block(addressId, statusId) {
+  const addrEl = document.getElementById(addressId);
+  const statEl = document.getElementById(statusId);
+
+  addrEl.textContent = 'Підключення…';
+  statEl.innerHTML = '';
+  try {
+    if (window.Web3API && typeof window.Web3API.initWeb3 === 'function') {
+      await window.Web3API.initWeb3();
+    }
+    const addr = window.Web3API && window.Web3API.getUserAddress ? window.Web3API.getUserAddress() : null;
+    addrEl.textContent = addr || 'Невідомо';
+    statEl.innerHTML = '<div class="result-valid" style="display:block">✅ Підключено до MetaMask</div>';
+    markWeb3Connected();
+  } catch {
+    addrEl.textContent = 'Не підключено';
+    statEl.innerHTML =
+      '<div class="result-invalid" style="display:block">' +
+      'MetaMask відхилено або помилка підключення.<br>' +
+      '<button class="btn btn-small" style="margin-top:8px" ' +
+        'onclick="connectWeb3Block(\'' + addressId + '\',\'' + statusId + '\')">Спробувати знову</button>' +
+      '</div>';
+  }
+}
+
+// ── ?next= redirect handling ─────────────────────────────────────────────
+const _nextPage = (function () {
+  const raw = new URLSearchParams(location.search).get('next');
+  if (!raw) return null;
+  // Allow only relative paths to prevent open-redirect
+  const decoded = decodeURIComponent(raw);
+  return decoded.startsWith('/') && !decoded.startsWith('//') ? decoded : null;
+})();
+
+if (_nextPage) {
+  const nb = document.getElementById('nextBanner');
+  if (nb) {
+    nb.style.cssText = 'margin:0 0 20px;padding:14px 18px;border-radius:10px;' +
+      'background:#fef9c3;border:1px solid #fbbf24;color:#713f12;' +
+      'font-size:var(--text-sm);font-weight:500;line-height:1.5';
+    nb.innerHTML = '🔒 <strong>Для продовження зареєструйтесь</strong> — оберіть спосіб ідентифікації нижче. ' +
+      'Після реєстрації ви будете автоматично повернуті на попередню сторінку.';
+  }
+}
+
+// ── Sign Out ──────────────────────────────────────────────────────────────
+// Re-callable (not a one-shot IIFE) because identification can complete
+// asynchronously after the initial render — e.g. Web3-only profiles via
+// markWeb3Connected(), or email registration via _onEmailSuccess().
+let _signOutBound = false;
+function refreshSignOutSection() {
+  const email   = localStorage.getItem('certswap_user_email');
+  const mm      = localStorage.getItem('certswap_metamask_connected');
+  const section = document.getElementById('signOutSection');
+  const info    = document.getElementById('signOutInfo');
+  const btn     = document.getElementById('signOutBtn');
+
+  if (!email && !mm) {
+    section.style.display = 'none';
+    return;
+  }
+
+  section.style.display = 'block';
+
+  const parts = [];
+  if (email) parts.push('📧 ' + email);
+  if (mm)    parts.push('🦊 MetaMask');
+  info.textContent = 'Поточна ідентифікація: ' + parts.join(' · ');
+
+  if (_signOutBound) return;
+  _signOutBound = true;
+  btn.addEventListener('click', function () {
+    localStorage.removeItem('certswap_user_email');
+    localStorage.removeItem('certswap_metamask_connected');
+    if (window.Web3API && typeof window.Web3API.disconnect === 'function') {
+      window.Web3API.disconnect();
+    }
+    location.reload();
+  });
+}
+window.refreshSignOutSection = refreshSignOutSection;
+refreshSignOutSection();
+
+// ── Email section init ────────────────────────────────────────────────────
+async function initEmailSection(statusId, formId, inputId, resultId, btnId) {
+  const statusEl = document.getElementById(statusId);
+  const formEl   = document.getElementById(formId);
+  const inputEl  = document.getElementById(inputId);
+  const resultEl = document.getElementById(resultId);
+  const btnEl    = document.getElementById(btnId);
+
+  const me = await API.authMe().catch(function () { return { success: false }; });
+  if (!me.success) {
+    statusEl.innerHTML = '<p style="color:var(--cs-muted);font-size:var(--text-sm)">Email реєстрація недоступна.</p>';
+    return;
+  }
+
+  function renderEmailStatus(addr) {
+    if (addr) {
+      statusEl.innerHTML =
+        '<div style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;' +
+        'background:var(--cs-green-bg);border:1px solid var(--cs-green-border);' +
+        'border-radius:var(--radius-pill);font-size:var(--text-sm);color:var(--cs-green);font-weight:600">' +
+        '✓ ' + addr + '</div>';
+      inputEl.value = addr;
+    } else {
+      statusEl.innerHTML =
+        '<p style="color:var(--cs-muted);font-size:var(--text-sm);margin:0">' +
+        'Email не прив\'язаний — введіть адресу нижче</p>';
+    }
+    formEl.style.display = 'block';
+  }
+
+  renderEmailStatus(me.email);
+
+  async function _onEmailSuccess(saved, mainHtml) {
+    localStorage.setItem('certswap_user_email', saved);
+    renderEmailStatus(saved);
+
+    const restore = await API.authRestore(saved).catch(function () { return { success: false }; });
+    if (restore.success && restore.userId) {
+      localStorage.setItem('certswap_user_id', restore.userId);
+      resultEl.className = 'result-valid mt-3';
+      resultEl.innerHTML = mainHtml + '<br>✅ Акаунт відновлено';
+    } else {
+      resultEl.className = 'result-valid mt-3';
+      resultEl.innerHTML = mainHtml;
+    }
+
+    if (window.updateProfileChip) window.updateProfileChip();
+    if (window.refreshSignOutSection) window.refreshSignOutSection();
+    if (_nextPage) setTimeout(function () { window.location.href = _nextPage; }, 1200);
+  }
+
+  formEl.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const addr = inputEl.value.trim();
+    if (!addr) return;
+
+    btnEl.disabled = true;
+    btnEl.textContent = 'Збереження…';
+    resultEl.style.display = 'none';
+
+    const res = await API.authEmail(addr).catch(function () { return { success: false, message: 'Мережева помилка' }; });
+    btnEl.disabled = false;
+    btnEl.textContent = 'Зберегти email';
+    resultEl.style.display = 'block';
+
+    if (res.success && res.sent === true) {
+      await _onEmailSuccess(addr, '✅ Перевірте пошту — лист надіслано на <strong>' + addr + '</strong>');
+    } else if (res.success && res.sent === false) {
+      await _onEmailSuccess(addr, '✅ Email збережено. Верифікація буде доступна незабаром.');
+    } else if (res.success) {
+      await _onEmailSuccess(res.email || addr, '✅ Email збережено: ' + (res.email || addr));
+    } else {
+      resultEl.className = 'result-invalid mt-3';
+      resultEl.textContent = '❌ ' + (res.message || 'Помилка надсилання');
+    }
+  });
+}
+</script>
+<script src="/js/pwa.js"></script>
+</body>
+</html>
