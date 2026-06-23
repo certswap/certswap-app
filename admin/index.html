@@ -614,22 +614,10 @@
       <div id="ttlContent"><p class="loading" style="display:flex" data-i18n="common.loading">Завантаження…</p></div>
     </section>
 
-    <section class="card">
-      <h2 data-i18n="admin.settings.sitepwd.title">Доступ до сайту (SITE_PASSWORD)</h2>
-      <p class="card-desc" data-i18n-html="admin.settings.sitepwd.desc">Basic Auth для кінцевих користувачів — захищає весь сайт паролем крім <code style="font-family:monospace">/api/</code> та <code style="font-family:monospace">/admin</code>.</p>
-      <div id="sitePasswordInfo"></div>
-      <div style="margin-top:16px">
-        <h3 style="font-size:var(--text-sm);margin:0 0 10px" data-i18n="admin.settings.render.title">Як змінити на Render</h3>
-        <ol class="info-list">
-          <li data-i18n-html="admin.settings.render.li1">Відкрий <strong>Render Dashboard</strong> → обери свій сервіс <em>certswap</em></li>
-          <li data-i18n-html="admin.settings.render.li2">Зліва → <strong>Environment</strong></li>
-          <li data-i18n-html="admin.settings.render.li3">Знайди або додай змінну <code style="font-family:monospace">SITE_PASSWORD</code></li>
-          <li data-i18n-html="admin.settings.render.li4">Щоб <strong>увімкнути</strong> — встанови значення пароля (будь-який рядок)</li>
-          <li data-i18n-html="admin.settings.render.li5">Щоб <strong>вимкнути</strong> — видали змінну або залиш порожній рядок</li>
-          <li data-i18n-html="admin.settings.render.li6">Натисни <strong>Save Changes</strong> → Render автоматично перезапустить сервер</li>
-        </ol>
-        <div class="tech-note" style="margin-top:10px" data-i18n-html="admin.settings.render.note">Зміни набувають чинності після перезапуску (~30 сек). Адмін-панель (<code style="font-family:monospace">/admin</code>) завжди доступна незалежно від SITE_PASSWORD.</div>
-      </div>
+    <section class="card mt-4">
+      <h2>🔒 Пароль на вхід сайту</h2>
+      <p class="card-desc">Вмикає Basic Auth для публічного сайту (activate, wallet, pay тощо). Адмін-панель захищена окремим паролем і не залежить від цього перемикача. Сам пароль задається через env <code style="font-family:monospace">SITE_PASSWORD</code>.</p>
+      <div id="sitePasswordContent"><p class="loading" style="display:flex">Завантаження…</p></div>
     </section>
 
     <section class="card tech-info">
@@ -1145,7 +1133,7 @@ async function saveModules() {
 
 async function loadSettings() {
   const cfgEl = document.getElementById('configContent');
-  const spEl  = document.getElementById('sitePasswordInfo');
+  const spEl  = document.getElementById('sitePasswordContent');
   cfgEl.innerHTML = '<p class="loading" style="display:flex">Завантаження…</p>';
   try {
     const data = await adminAPI('/admin-api/config');
@@ -1159,10 +1147,10 @@ async function loadSettings() {
         c.admin_configured
           ? '<span class="badge b-green">✅ Встановлено</span>'
           : '<span class="badge b-red">❌ Не встановлено</span>') +
-      cfgRow('SITE_PASSWORD', 'Basic Auth для користувачів',
-        c.site_password_enabled
-          ? '<span class="badge b-amber">🔒 Увімкнено</span>'
-          : '<span class="badge b-green">🔓 Вимкнено</span>') +
+      cfgRow('SITE_PASSWORD (env)', 'Пароль для Basic Auth (секрет на сервері)',
+        c.site_password_configured
+          ? '<span class="badge b-green">✅ Встановлено</span>'
+          : '<span class="badge b-amber">⚠️ Не встановлено</span>') +
       cfgRow('CONTRACT', 'Polygon Amoy смарт-контракт',
         '<span class="mono">' + esc(c.contract || '—') + '</span>') +
       cfgRow('PORT', 'Порт сервера',
@@ -1170,9 +1158,19 @@ async function loadSettings() {
       cfgRow('PAYMENT_TOKEN_TTL', 'Таймер платіжного токена',
         '<span class="badge b-blue">' + esc(c.payment_token_ttl ?? 60) + ' сек</span>');
 
-    spEl.innerHTML = c.site_password_enabled
-      ? '<div class="result-info mt-3" style="display:block">🔒 Сайт захищено Basic Auth. Для відключення — видали env <code>SITE_PASSWORD</code> і перезапусти сервер.</div>'
-      : '<div class="result-valid mt-3" style="display:block">🔓 Сайт відкритий — Basic Auth не активовано. Встанови <code>SITE_PASSWORD</code> щоб закрити доступ.</div>';
+    if (spEl) {
+      const enabled = !!c.site_password_enabled;
+      spEl.innerHTML =
+        moduleToggleRow('sitePasswordToggle', enabled, '🔒 Закрити публічний сайт паролем', '', '',
+          'Якщо увімкнено — всі публічні сторінки вимагають Basic Auth пароль (SITE_PASSWORD). Адмін-панель завжди доступна незалежно.') +
+        '<div style="margin-top:16px;display:flex;align-items:center;gap:12px">' +
+          '<button class="btn" id="sitePwdSaveBtn" onclick="saveSitePasswordEnabled()">💾 Зберегти</button>' +
+          '<span id="sitePwdStatus" style="font-size:var(--text-sm);color:var(--cs-muted)"></span>' +
+        '</div>' +
+        (!c.site_password_configured
+          ? '<div class="result-info mt-3" style="display:block">⚠️ Env <code>SITE_PASSWORD</code> не встановлено на сервері — пароль буде порожнім.</div>'
+          : '');
+    }
 
     const ttlEl = document.getElementById('ttlContent');
     if (ttlEl) {
@@ -1704,6 +1702,33 @@ async function saveTTL() {
 
   btn.disabled = false;
   btn.textContent = 'Зберегти';
+}
+
+async function saveSitePasswordEnabled() {
+  const checkbox = document.getElementById('sitePasswordToggle');
+  const btn      = document.getElementById('sitePwdSaveBtn');
+  const status   = document.getElementById('sitePwdStatus');
+  if (!checkbox) return;
+  btn.disabled = true; btn.textContent = 'Збереження…'; status.textContent = '';
+  try {
+    const res = await fetch(_BACKEND + '/admin-api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...adminHeaders() },
+      body: JSON.stringify({ site_password_enabled: checkbox.checked })
+    });
+    const data = await res.json();
+    if (data.success) {
+      status.style.color = 'var(--cs-green)';
+      status.textContent = '✅ Збережено: сайт ' + (checkbox.checked ? 'закрито паролем' : 'відкрито');
+    } else {
+      status.style.color = 'var(--cs-red)';
+      status.textContent = '❌ ' + (data.message || 'Помилка');
+    }
+  } catch (err) {
+    status.style.color = 'var(--cs-red)';
+    status.textContent = '❌ ' + err.message;
+  }
+  btn.disabled = false; btn.textContent = '💾 Зберегти';
 }
 
 function loadAdminConfig() {

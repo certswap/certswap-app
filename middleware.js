@@ -18,18 +18,36 @@ function withLangCookie(req) {
   });
 }
 
-export default function middleware(req) {
+export default async function middleware(req) {
   const { pathname } = new URL(req.url);
 
   // Always accessible
   if (pathname === '/ping.html' || pathname === '/ping') return;
 
-  const passwordEnabled = process.env.SITE_PASSWORD_ENABLED === 'true';
+  // Check site_password_enabled from backend config (fail open on error/timeout)
+  let passwordEnabled = false;
+  const backendUrl = process.env.BACKEND_URL;
+  if (backendUrl) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 3000);
+      const cfgRes = await fetch(backendUrl + '/api/config', { signal: controller.signal });
+      clearTimeout(timer);
+      if (cfgRes.ok) {
+        const cfg = await cfgRes.json();
+        passwordEnabled = !!cfg.site_password_enabled;
+      }
+    } catch {
+      // Network error or timeout → fail open, don't block the site
+      passwordEnabled = false;
+    }
+  }
+
   if (!passwordEnabled) return withLangCookie(req);
 
   const basicAuth = req.headers.get('authorization');
   if (basicAuth) {
-    const [user, pwd] = atob(basicAuth.split(' ')[1]).split(':');
+    const [, pwd] = atob(basicAuth.split(' ')[1]).split(':');
     if (pwd === (process.env.SITE_PASSWORD || 'certswap2026')) return withLangCookie(req);
   }
 

@@ -743,6 +743,13 @@
       'how.n.brg.note':         'Вибір відбувається при першій транзакції — і зберігається для пристрою. Всі операції відповідають стандарту eIDAS.',
       'how.n.try.title':        'Спробуйте самі',
 
+      // Contacts — IP Protection
+      'contacts.ip.title':      'Захист інтелектуальної власності',
+      'contacts.ip.desc':       'Концепція та архітектура CertSwap зафіксовані у блокчейні через OriginStamp.',
+      'contacts.ip.hash.label': 'SHA-256 Хеш:',
+      'contacts.ip.ts.label':   'Дата:',
+      'contacts.ip.verify':     'Перевірити в OriginStamp →',
+
       // Auth overlay
       'auth.overlay.title':   'Для продовження потрібна ідентифікація',
       'auth.overlay.desc':    'Оберіть один із способів для доступу до сторінки',
@@ -1486,6 +1493,13 @@
       'how.n.tab.m2':           '📧 Without MetaMask',
       'how.n.brg.note':         'The choice happens at your first transaction — saved for this device. All operations comply with the eIDAS standard.',
       'how.n.try.title':        'Try it yourself',
+
+      // Contacts — IP Protection
+      'contacts.ip.title':      'IP Protection',
+      'contacts.ip.desc':       "CertSwap's concept and architecture are timestamped on the blockchain via OriginStamp.",
+      'contacts.ip.hash.label': 'SHA-256 Hash:',
+      'contacts.ip.ts.label':   'Timestamp:',
+      'contacts.ip.verify':     'Verify on OriginStamp →',
 
       // Auth overlay
       'auth.overlay.title':   'Identification required',
