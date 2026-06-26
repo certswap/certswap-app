@@ -23,12 +23,5 @@ Vanilla HTML/CSS/JS · ethers.js · Polygon Amoy Testnet
 - Email login or MetaMask login, with cross-device account recovery by email
 - Merchant terminal for verifying and confirming payment tokens
 
-## IP Protection
-This project's concept and architecture are timestamped on the blockchain via OriginStamp.
-- [IP Declaration (PDF)](docs/CertSwap_IP_Declaration.pdf)
-- [OriginStamp Certificate (PDF)](docs/CertSwap_OriginStamp_Certificate.pdf)
-- SHA-256 Hash: `0x09f874d4237c6f0f5a6e74317fb249d793fe560752f52930d063dbb6500b6b45`
-- Verify independently: https://verify.originstamp.com/
-
 ## License
 MIT
